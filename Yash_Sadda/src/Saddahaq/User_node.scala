@@ -7806,6 +7806,14 @@ println("Jar Ok")
 
   
   def main(): Unit = {
+    
+    
+    System.out.println("main from User_node");
+    System.out.println("Insert dummy data into graph db")
+    
+    insert_dummy_data()
+    
+    
 		  try
         {
             val serverTransport : TServerSocket = new TServerSocket(9779);
@@ -7816,11 +7824,63 @@ println("Jar Ok")
             System.out.println("Sadda haq ethe rakh");
             server.serve();
         }
-        catch { 
+        catch {
+          
             case x: Exception => x.printStackTrace();
         } 
-    System.out.println("Started");
+  }
+  
+  def insert_dummy_data(): Unit = {
     
+    System.out.println("Inserting dummy data");
+    
+    //initialize graph.db with pre required data
+    calc_views()
+    update_tiles_temp()
+    update_tiles_td()
+    calc_hash_trends()
+    nouns_update()
+    calc_user_tiles()
+    calc_local_tiles()
+    
+    var t = (System.currentTimeMillis()/1000).toInt
+    
+    var i =0
+    
+    
+    //creating users from user1 to user100
+    for(i <- 1 to 100)
+      //create_user("fname"+i,"lname"+i,"user"+i,"email"+i,"hyd",1,t,200);
+    System.out.println("users created from user1 to user100");
+    
+    //display users info from user1 to user100
+    //get the user node index
+    var userNodeIndex = getNodeIndex("user").get
+    //get all user nodes into a list
+    var userNodes = userNodeIndex.query("id","*").iterator().asScala.toList
+    //new list to represent key set for json
+    val l1 : List[String] = List("first_name","last_name","user_name","email","location","time_created")
+    //output list that contains json
+    var list = List[Any]()
+    for( x <- userNodes )	//for each user / user node from the list
+    {
+      
+      list :+= JSONObject (	//create json and add it to list
+    		  				l1.zip(//zip l1 as keys and node properties as values
+    		  				    List(	//creating new list with node properties
+    		  						x.getProperty("first_name").toString(),
+    		  						x.getProperty("last_name").toString(),
+    		  						x.getProperty("user_name").toString(),
+    		  						x.getProperty("email").toString(),
+    		  						x.getProperty("location").toString(),
+    		  						x.getProperty("time_created").toString()
+    		  						)
+    		                ).toMap //convert the list to Map
+    		             );
+    }
+    System.out.println(JSONArray(list).toString());
+    System.out.println("Display users from user1 to user100"); 
+          
   }
 
 }
