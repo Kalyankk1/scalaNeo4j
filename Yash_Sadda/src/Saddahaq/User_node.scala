@@ -7807,13 +7807,6 @@ println("Jar Ok")
   
   def main(): Unit = {
     
-    
-    System.out.println("main from User_node");
-    System.out.println("Insert dummy data into graph db")
-    
-    insert_dummy_data()
-    
-    
 		  try
         {
             val serverTransport : TServerSocket = new TServerSocket(9779);
@@ -7830,6 +7823,12 @@ println("Jar Ok")
         } 
   }
   
+  /**
+   * @author kalyan kumar komati
+   * 
+   * To test localhost by inserting and verifying graph db and functions
+   * 
+   */
   def insert_dummy_data(): Unit = {
     
     System.out.println("Inserting dummy data");
@@ -7862,6 +7861,7 @@ println("Jar Ok")
     val l1 : List[String] = List("first_name","last_name","user_name","email","location","time_created")
     //output list that contains json
     var list = List[Any]()
+    var user = userNodeIndex.get("id","user100").getSingle()
     for( x <- userNodes )	//for each user / user node from the list
     {
       
@@ -7877,6 +7877,8 @@ println("Jar Ok")
     		  						)
     		                ).toMap //convert the list to Map
     		             );
+      if(x == user)
+        System.out.println("user100 found")
     }
     System.out.println(JSONArray(list).toString());
     System.out.println("Display users from user1 to user100"); 

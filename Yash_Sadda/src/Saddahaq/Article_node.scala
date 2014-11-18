@@ -2848,15 +2848,14 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
     cat: String,  // category
     count: Int,  // No of articles required 
     prev_cnt:Int,
-    art_id: String,   // "" if it's a first call , non empty string for any other call
-    tiles_type: String // "H" for home page
+    art_id: String,   // user2 user_id "" if it's a first call , non empty string for any other call
+    tiles_type: String // "H" for home page or "up" for user profile
     )  :String =        
     {
     
     
     withTx {
     implicit neo =>
-     
     
         val TilesIndex = getNodeIndex("tiles").get
         val HeadlinesIndex = getNodeIndex("headlines").get
@@ -3059,7 +3058,10 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 	              debate = user_node1.getRelationships("Debate_Written_By").asScala.toList.map(_.getOtherNode(user_node1))
 	              townhall = user_node1.getRelationships("Townhall_Written_By").asScala.toList.map(_.getOtherNode(user_node1))
 	              
-                  val sorted_items = (art:::event:::petition:::debate:::townhall).filter( x =>  x.getProperty("space").toString.toInt == 0).sortBy(-_.getProperty("time_created").toString().toInt)
+	              //below commented line is written by Yash, which is not displaying items related to closed space even if item is written by loggen in user
+                  //val sorted_items = (art:::event:::petition:::debate:::townhall).filter( x =>  x.getProperty("space").toString.toInt == 0 ).sortBy(-_.getProperty("time_created").toString().toInt)
+                  //wrote on 28th Nov 2014 at 2:00PM to display closed space if requested user is same as item author, for this added one more condition while filtering with or operation
+                  val sorted_items = (art:::event:::petition:::debate:::townhall).filter( x =>  x.getProperty("space").toString.toInt == 0 || user_node == user_node1 ).sortBy(-_.getProperty("time_created").toString().toInt)
                   all_items = sorted_items.distinct.slice(prev_cnt,(prev_cnt+count))
                   
 			      for(x <- all_items)
