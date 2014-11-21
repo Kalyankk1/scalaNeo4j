@@ -1,4 +1,4 @@
-package Saddahaq
+package Saddahaq;
 import sys.ShutdownHookThread
 import org.neo4j.scala.{TypedTraverser, SingletonEmbeddedGraphDatabaseServiceProvider, Neo4jWrapper}
 import org.neo4j.scala.Neo4jIndexProvider
@@ -3462,14 +3462,47 @@ override def NodeIndexConfig =   ("user", Some(Map("provider" -> "lucene", "type
 	     {
 	         // social stream
 	         // extracting all the actions that were done on the items published by the user
-	         event_invites = node.getRelationships("Invited_To_Event","User_Of_Article","User_Of_Event","User_Of_Petition").asScala.toList.filter( x => x.getOtherNode(node).getProperty("space").toString.toInt == 0)
+	         event_invites = 
+	           node.getRelationships("Invited_To_Event","User_Of_Article","User_Of_Event","User_Of_Petition").asScala.toList
+	           	.filter( x => x.getOtherNode(node).getProperty("space").toString.toInt == 0)
 //	         com_mentions = node.getRelationships("User_Of_Comment").asScala.toList.filter( x => x.getOtherNode(node).getProperty("space").toString.toInt == 0)
 	         
-	         val art_list = node.getRelationships("Article_Written_By").asScala.map(_.getOtherNode(node)).toList.filter( x => x.getProperty("space").toString.toInt == 0)
-	         art_com_rels = art_list.map( x => x.getRelationships("Comment_To_Article").asScala.toList.filterNot( x => x.getStartNode.hasRelationship("Comment_To_Comment",Direction.OUTGOING)).sortBy(-_.getProperty("time").toString().toInt).slice(0,1).map(_.getOtherNode(x))).flatten.map( x => x.getSingleRelationship("Comment_Written_By",Direction.OUTGOING))
-		     art_voted_rels = art_list.map( x => x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,1)).flatten
-		     art_poll_rels = art_list.map( x => x.getRelationships("Poll_App_Of").asScala.toList.map(_.getOtherNode(x))).flatten.map( x => x.getRelationships("Voted_To_Poll").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,1)).flatten
-		     commented_arts = art_com_rels.map( x => x.getStartNode()).map( x => x.getSingleRelationship("Comment_To_Article",Direction.OUTGOING).getEndNode())
+	         val art_list = 
+	           node.getRelationships("Article_Written_By").asScala.map(_.getOtherNode(node)).toList
+	           .filter( x => x.getProperty("space").toString.toInt == 0)
+	           
+	         art_com_rels = 
+	           art_list.map( 
+	               x => x.getRelationships("Comment_To_Article").asScala.toList
+	               .filterNot( x => x.getStartNode.hasRelationship("Comment_To_Comment",Direction.OUTGOING))
+	               .sortBy(-_.getProperty("time").toString().toInt)
+	               .slice(0,1)
+	               .map(_.getOtherNode(x))
+	               )
+	               .flatten
+	               .map( x => x.getSingleRelationship("Comment_Written_By",Direction.OUTGOING))
+		     
+	         art_voted_rels = 
+	           art_list.map( 
+	               x => x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt)
+	               .slice(0,1)
+	               )
+	               .flatten
+	               
+		     art_poll_rels = 
+		       art_list.map(
+		    		   x => x.getRelationships("Poll_App_Of").asScala.toList.map(_.getOtherNode(x))
+		    		   )
+		           .flatten
+		           .map( 
+		               x => x.getRelationships("Voted_To_Poll").asScala.toList.sortBy(-_.getProperty("time").toString().toInt)
+		               .slice(0,1)
+		               )
+		               .flatten
+		     
+		     commented_arts = 
+		       art_com_rels.map(x => x.getStartNode())
+		       	.map( x => x.getSingleRelationship("Comment_To_Article",Direction.OUTGOING).getEndNode())
 		     voted_arts = art_voted_rels.map( x => x.getEndNode())
 		     
 	         val event_list = node.getRelationships("Event_Created_By").asScala.map(_.getOtherNode(node)).toList.filter( x => x.getProperty("space").toString.toInt == 0)
@@ -3521,21 +3554,21 @@ override def NodeIndexConfig =   ("user", Some(Map("provider" -> "lucene", "type
          follows ::= node
          
          var user_follow_rels = follows.map(x => x.getRelationships("Follows",Direction.OUTGOING).asScala).flatten.toList.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
-	     var space_follow_rels = follows.map(x => x.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.toList.filter(z => z.getStartNode().getProperty("closed").toString().toInt == 0)).flatten.groupBy(_.getStartNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
-	     var space_created_rels = follows.map(x => x.getRelationships("Space_Created_By").asScala.toList.filter(z => z.getStartNode().getProperty("closed").toString().toInt == 0)).flatten
+	     var space_follow_rels = follows.map(x => x.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.toList.filter(z => z.getStartNode().getProperty("closed").toString().toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getStartNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var space_created_rels = follows.map(x => x.getRelationships("Space_Created_By").asScala.toList.filter(z => z.getStartNode().getProperty("closed").toString().toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten
 	     
          // extracting all the actions that were done by the users in the follows list
-	     var rels = follows.map(x => x.getRelationships("Event_Created_By","Article_Written_By","Petition_Written_By","Townhall_Written_By","Debate_Written_By").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten
-	     var rels2 = follows.map(x => x.getRelationships("article_voteup").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var rels = follows.map(x => x.getRelationships("Event_Created_By","Article_Written_By","Petition_Written_By","Townhall_Written_By","Debate_Written_By").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten
+	     var rels2 = follows.map(x => x.getRelationships("article_voteup").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0 || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
 	     rels2 = rels2.filterNot( x => voted_arts.contains(x.getEndNode()))
-	     var rels3 = follows.map(x => x.getRelationships("Is_Attending").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var rels3 = follows.map(x => x.getRelationships("Is_Attending").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
 	     rels3 = rels3.filterNot( x => atnd_events.contains(x.getEndNode()))
-	     var rels5 = follows.map(x => x.getRelationships("Signed_Petition").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var rels5 = follows.map(x => x.getRelationships("Signed_Petition").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
 	     rels5 = rels5.filterNot( x => signed_petitions.contains(x.getEndNode()))
 	     
-	     var rels6 = follows.map(x => x.getRelationships("Participated_In_Townhall").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var rels6 = follows.map(x => x.getRelationships("Participated_In_Townhall").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
 	     rels6 = rels6.filterNot( x => participated_townhalls.contains(x.getEndNode()))
-	     var rels7 = follows.map(x => x.getRelationships("Participated_In_Debate").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var rels7 = follows.map(x => x.getRelationships("Participated_In_Debate").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
 	     rels7 = rels7.filterNot( x => participated_debates.contains(x.getEndNode()))
 	     
 //	     var rels4 = follows.map(x => x.getRelationships("Voted_To_Poll").asScala).flatten.toList.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
@@ -3543,30 +3576,30 @@ override def NodeIndexConfig =   ("user", Some(Map("provider" -> "lucene", "type
 	     
 	     var coms_tot = follows.map(x => x.getRelationships("Comment_Written_By").asScala).flatten.toList.map( x => x.getStartNode()).filterNot( x => x.hasRelationship("Comment_To_Comment",Direction.OUTGOING))
 
-	     var art_coms = coms_tot.filter(x => x.hasRelationship("Comment_To_Article",Direction.OUTGOING)).filter( y => y.getSingleRelationship("Comment_To_Article",Direction.OUTGOING).getOtherNode(y).getProperty("space").toString.toInt == 0).map( x => x.getSingleRelationship("Comment_To_Article",Direction.OUTGOING)).groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0).getStartNode().getSingleRelationship("Comment_Written_By",Direction.OUTGOING))
+	     var art_coms = coms_tot.filter(x => x.hasRelationship("Comment_To_Article",Direction.OUTGOING)).filter( y => y.getSingleRelationship("Comment_To_Article",Direction.OUTGOING).getOtherNode(y).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s")).map( x => x.getSingleRelationship("Comment_To_Article",Direction.OUTGOING)).groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0).getStartNode().getSingleRelationship("Comment_Written_By",Direction.OUTGOING))
          art_coms = art_coms.filterNot(x => commented_arts.contains(x.getStartNode().getSingleRelationship("Comment_To_Article",Direction.OUTGOING).getEndNode()))
 	     
 	     
-	     var event_coms = coms_tot.filter(x => x.hasRelationship("Comment_To_Event",Direction.OUTGOING)).filter( y => y.getSingleRelationship("Comment_To_Event",Direction.OUTGOING).getOtherNode(y).getProperty("space").toString.toInt == 0).map( x => x.getSingleRelationship("Comment_To_Event",Direction.OUTGOING)).groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0).getStartNode().getSingleRelationship("Comment_Written_By",Direction.OUTGOING))
+	     var event_coms = coms_tot.filter(x => x.hasRelationship("Comment_To_Event",Direction.OUTGOING)).filter( y => y.getSingleRelationship("Comment_To_Event",Direction.OUTGOING).getOtherNode(y).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s")).map( x => x.getSingleRelationship("Comment_To_Event",Direction.OUTGOING)).groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0).getStartNode().getSingleRelationship("Comment_Written_By",Direction.OUTGOING))
 	     event_coms = event_coms.filterNot(x => commented_events.contains(x.getStartNode().getSingleRelationship("Comment_To_Event",Direction.OUTGOING).getEndNode()))
 	     
-	     var p_coms = coms_tot.filter(x => x.hasRelationship("Comment_To_Petition",Direction.OUTGOING)).filter( y => y.getSingleRelationship("Comment_To_Petition",Direction.OUTGOING).getOtherNode(y).getProperty("space").toString.toInt == 0).map( x => x.getSingleRelationship("Comment_To_Petition",Direction.OUTGOING)).groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0).getStartNode().getSingleRelationship("Comment_Written_By",Direction.OUTGOING))
+	     var p_coms = coms_tot.filter(x => x.hasRelationship("Comment_To_Petition",Direction.OUTGOING)).filter( y => y.getSingleRelationship("Comment_To_Petition",Direction.OUTGOING).getOtherNode(y).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s")).map( x => x.getSingleRelationship("Comment_To_Petition",Direction.OUTGOING)).groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0).getStartNode().getSingleRelationship("Comment_Written_By",Direction.OUTGOING))
 	     p_coms = p_coms.filterNot(x => commented_petitions.contains(x.getStartNode().getSingleRelationship("Comment_To_Petition",Direction.OUTGOING).getEndNode()))
 	     
 	     //follows.map(x => x.getRelationships("Comment_Written_By").asScala).flatten.toList.map( x => x.getStartNode())
-	     var t_qtns = follows.map(x => x.getRelationships("Asked_Question").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var t_qtns = follows.map(x => x.getRelationships("Asked_Question").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
 	     t_qtns =  t_qtns.filterNot(x => questioned_townhalls.contains(x.getEndNode()))
 	     
-	     var t_coms = follows.map(x => x.getRelationships("Commented_On_Townhall").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var t_coms = follows.map(x => x.getRelationships("Commented_On_Townhall").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
 	     t_coms =  t_coms.filterNot(x => commented_townhalls.contains(x.getEndNode()))
 	     
-	     var d_qtns = follows.map(x => x.getRelationships("Asked_Debate_Question").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var d_qtns = follows.map(x => x.getRelationships("Asked_Debate_Question").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
 	     d_qtns =  d_qtns.filterNot(x => qtn_debates.contains(x.getEndNode()))
 	     
-	     var d_args = follows.map(x => x.getRelationships("Started_Debate_Argument").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var d_args = follows.map(x => x.getRelationships("Started_Debate_Argument").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
 	     d_args =  d_args.filterNot(x => arg_debates.contains(x.getEndNode()))
 	     
-	     var d_coms = follows.map(x => x.getRelationships("Commented_On_Debate").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0)).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
+	     var d_coms = follows.map(x => x.getRelationships("Commented_On_Debate").asScala.toList.filter( y => y.getOtherNode(x).getProperty("space").toString.toInt == 0  || !user_type.equalsIgnoreCase("s"))).flatten.groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0))
 	     d_coms =  d_coms.filterNot(x => commented_debates.contains(x.getEndNode()))
 	     
 	     var sub_coms = follows.map(x => x.getRelationships("Comment_Written_By").asScala).flatten.toList.map(_.getStartNode).filter( x => x.hasRelationship("Comment_To_Comment",Direction.OUTGOING)).map( x => x.getSingleRelationship("Comment_To_Comment",Direction.OUTGOING)).groupBy(_.getEndNode()).valuesIterator.toList.filter( x => x.size > 0).map( x => x.sortBy(-_.getProperty("time").toString().toInt)).map( x => x(0).getStartNode().getSingleRelationship("Comment_Written_By",Direction.OUTGOING))
@@ -5750,8 +5783,8 @@ override def NodeIndexConfig =   ("user", Some(Map("provider" -> "lucene", "type
 		    var p_hash_nodes =  List[org.neo4j.graphdb.Node]()
 		    var e_hash_nodes =  List[org.neo4j.graphdb.Node]()
 		    
-		    petitions = PetitionIndex.query("id", "*" ).iterator().asScala.toList.filter(  x => x.getProperty("space").toString.toInt == 0).sortBy(-_.getProperty("time_created").toString().toInt).slice(0,2)
-            events = EventIndex.query("id", "*" ).iterator().asScala.toList.filter( x => x.getProperty("space").toString.toInt == 0).sortBy(-_.getProperty("time_created").toString().toInt).slice(0,2)
+		    petitions = PetitionIndex.query("id", "*" ).iterator().asScala.toList.filter(  x => x.getProperty("space").toString.toInt == 0 ).sortBy(-_.getProperty("time_created").toString().toInt).slice(0,2)
+            events = EventIndex.query("id", "*" ).iterator().asScala.toList.filter( x => x.getProperty("space").toString.toInt == 0 ).sortBy(-_.getProperty("time_created").toString().toInt).slice(0,2)
          
             p_hash_nodes = petitions.map( x => x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.map(_.getOtherNode(x)) ).flatten
             e_hash_nodes = events.map( x => x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.map(_.getOtherNode(x)) ).flatten
@@ -7806,6 +7839,7 @@ println("Jar Ok")
 
   
   def main(): Unit = {
+    insert_dummy_data()
     
 		  try
         {
@@ -7825,6 +7859,7 @@ println("Jar Ok")
   
   /**
    * @author kalyan kumar komati
+   * 
    * 
    * To test localhost by inserting and verifying graph db and functions
    * 
@@ -7846,25 +7881,29 @@ println("Jar Ok")
     
     var i =0
     
-    
+    /*
     //creating users from user1 to user100
-    for(i <- 1 to 100)
+    //for(i <- 1 to 100)
       //create_user("fname"+i,"lname"+i,"user"+i,"email"+i,"hyd",1,t,200);
-    System.out.println("users created from user1 to user100");
+    //System.out.println("users created from user1 to user100");
     
     //display users info from user1 to user100
     //get the user node index
     var userNodeIndex = getNodeIndex("user").get
     //get all user nodes into a list
+      //create_user("PMO","India","pmoindia","email"+i,"hyd",1,t,200);
+      edit_user("USER1","user","user100","email","location",2);
     var userNodes = userNodeIndex.query("id","*").iterator().asScala.toList
     //new list to represent key set for json
     val l1 : List[String] = List("first_name","last_name","user_name","email","location","time_created")
     //output list that contains json
     var list = List[Any]()
+    
     var user = userNodeIndex.get("id","user100").getSingle()
     for( x <- userNodes )	//for each user / user node from the list
     {
       
+      if(x == user){
       list :+= JSONObject (	//create json and add it to list
     		  				l1.zip(//zip l1 as keys and node properties as values
     		  				    List(	//creating new list with node properties
@@ -7877,12 +7916,51 @@ println("Jar Ok")
     		  						)
     		                ).toMap //convert the list to Map
     		             );
-      if(x == user)
-        System.out.println("user100 found")
+      list :+= JSONObject (	//create json and add it to list
+    		  				l1.zip(//zip l1 as keys and node properties as values
+    		  				    List(	//creating new list with node properties
+    		  						x.getProperty("first_name")+ " " +x.getProperty("last_name"),
+    		  						x.getProperty("user_name").toString(),
+    		  						x.getProperty("email").toString(),
+    		  						x.getProperty("location").toString(),
+    		  						x.getProperty("time_created").toString()
+    		  						)
+    		                ).toMap //convert the list to Map
+    		             );
+        System.out.println(x.getProperty("first_name") + " " + x.getProperty("last_name"))
+        System.out.println(x.getProperty("first_name").toString() + " " + x.getProperty("last_name").toString())
+      }
     }
     System.out.println(JSONArray(list).toString());
     System.out.println("Display users from user1 to user100"); 
-          
+    * 
+    * 
+    */
+   /* System.out.println(
+    create_space("user98","sk1","sk1","sk1","sk1","sk1",t,0,0));
+    System.out.println(
+    create_space("user99","sk2","sk2","sk2","sk2","sk2",t,0,0));
+    System.out.println(
+    create_space("user99","sk3","sk3","sk3","sk3","sk3",t,0,1));
+    System.out.println(
+    create_space("user100","sk4","sk4","sk4","sk4","sk4",t,0,0));
+    
+    */
+    /*space_follow("user99","sk4");
+    //System.out.println(get_user_spaces("user98","c"));
+    System.out.println(get_user_spaces("user99","f"));
+    System.out.println(get_user_spaces("user100","f"));*/
+    
+    //create three articles with different hash tags
+    System.out.println(
+    create_article("user98","article98","article-title-id-98","article title 1","article contnet 1","article summery 1","article fut image2", "technology","hashtag1,hashtag2","","",t,"","","",0,0,0))
+    System.out.println(
+    create_article("user99","article99","article-title-id-99","article title 2","article contnet 2","article summery 2","article fut image2", "politics","hashtag2,hashtag3","","",t+10000,"","","",0,0,0))
+    System.out.println(
+    create_article("user100","article100","article-title-id-100","article title 3","article contnet 3","article summery 3","article fut image", "sports","hashtag3,hashtag4","","",t+20000,"","","",0,0,0))
+    //search for suggestions by calling view_suggestions
+    
+    System.out.println(view_suggestions("A","article98","",2,"user97","hashtag4"))
   }
 
 }

@@ -3059,9 +3059,11 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 	              townhall = user_node1.getRelationships("Townhall_Written_By").asScala.toList.map(_.getOtherNode(user_node1))
 	              
 	              //below commented line is written by Yash, which is not displaying items related to closed space even if item is written by loggen in user
-                  //val sorted_items = (art:::event:::petition:::debate:::townhall).filter( x =>  x.getProperty("space").toString.toInt == 0 ).sortBy(-_.getProperty("time_created").toString().toInt)
-                  //wrote on 28th Nov 2014 at 2:00PM to display closed space if requested user is same as item author, for this added one more condition while filtering with or operation
-                  val sorted_items = (art:::event:::petition:::debate:::townhall).filter( x =>  x.getProperty("space").toString.toInt == 0 || user_node == user_node1 ).sortBy(-_.getProperty("time_created").toString().toInt)
+               //val sorted_items = (art:::event:::petition:::debate:::townhall).filter( x =>  x.getProperty("space").toString.toInt == 0 ).sortBy(-_.getProperty("time_created").toString().toInt)
+                  //wrote on 28th Nov 2014 at 2:00PM (@author:kalyan kumar komati) to display closed space if requested user is same as item author, for this added one more condition while filtering with or operation
+               //val sorted_items = (art:::event:::petition:::debate:::townhall).filter( x =>  x.getProperty("space").toString.toInt == 0 || user_node == user_node1 ).sortBy(-_.getProperty("time_created").toString().toInt)
+                  //Above line is change to below (filter is removed as discribed by Yash & dev) on 19th Nov 2014 at 8:30 PM IST - @author: kalyan kumar
+                  val sorted_items = (art:::event:::petition:::debate:::townhall).sortBy(-_.getProperty("time_created").toString().toInt)
                   all_items = sorted_items.distinct.slice(prev_cnt,(prev_cnt+count))
                   
 			      for(x <- all_items)
@@ -4748,70 +4750,62 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
     }
   }
   
+  
   def view_suggestions(
       
-      item_type:String,
-      item_id:String,
-      a_ids:String,
-      count: Int,
-      user_name: String,
-      hashtags: String
+      item_type:String, //A/E/P
+      item_id:String,	//id of the present article or empty
+      a_ids:String,		//comma separated id's of the related articles
+      count: Int,		//count to return that many number of articles
+      user_name: String,	//user name of the logged in user
+      hashtags: String	//comma separated hashtags to consider
       ): String =        
   {
     
-       var cat =  List[String]()
+       var cat =  List[String]() //list of categories of item_id
        var content = ""
        val toRemove = "~`!@#$%^&*()_-+=*{}[]:;'|/".toSet
        //var item_node: org.neo4j.graphdb.Node = null
-       val userIndex = getNodeIndex("user").get
+       val userIndex = getNodeIndex("user").get	
        val hashIndex = getNodeIndex("sub_category").get
-       val user_node = userIndex.get("id",user_name).getSingle()
+       val user_node = userIndex.get("id",user_name).getSingle() //get user node
        var item_node = user_node
        
        //val article_ids = a_ids.split(":").toList(0)
-       val hash_ids = hashtags.split(",").toList
-       var hash_nodes  = hash_ids.map( x => hashIndex.get("name",x).getSingle()).filter( y => y != null)
+       val hash_ids = hashtags.filterNot(toRemove).toLowerCase().split(",").toList //remove any special symbols and convert to list
+//       System.out.println("Total  number of hash tags inputed is: "+hash_ids.size + " and list is" + hash_ids)	//get the hash tag nodes
+       
+       var hash_nodes  = hash_ids.map( x => hashIndex.get("name",x).getSingle()).filter( y => y != null) //get hash tag nodes
+//       System.out.println("Total  number of hash nodes inputed is: "+hash_nodes.size )
        
        if(item_type.equals("A"))
        {
          val itemIndex = getNodeIndex("article").get
-         item_node = itemIndex.get("id",item_id).getSingle()
-         //println(item_node)
-         cat = item_node.getRelationships("Belongs_To_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(item_node)).map(y => y.getProperty("name").toString()).toList
-//         content = item_node.getProperty("article_content").toString
-//         hash_nodes = item_node.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(item_node))
-//         hash_node = hash_nodes(0)
-	         
+         item_node = itemIndex.get("id",item_id).getSingle() //get the article node if item type is A / Article
+         // get the item categories as list
+         cat = item_node.getRelationships("Belongs_To_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(item_node)).map(y => y.getProperty("name").toString()).toList        
        }
        
        else if(item_type.equals("E"))
        {
          val itemIndex = getNodeIndex("event").get
-         item_node = itemIndex.get("id",item_id).getSingle()
-         cat = item_node.getRelationships("Belongs_To_Event_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(item_node)).map(y => y.getProperty("name").toString()).toList
-//         hash_nodes = item_node.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(item_node))
-//         hash_node = hash_nodes(0)
-	     
-         //         content = item_node.getProperty("event_content").toString
-         
+         item_node = itemIndex.get("id",item_id).getSingle() //get event node, if item type is E / Event
+         //get the item categories as list
+         cat = item_node.getRelationships("Belongs_To_Event_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(item_node)).map(y => y.getProperty("name").toString()).toList 
        }
        
        else
        {
          val itemIndex = getNodeIndex("petition").get
-         item_node = itemIndex.get("id",item_id).getSingle()
+         item_node = itemIndex.get("id",item_id).getSingle() //get the petetion node, (only possible inputs are A/E/P)
+         //get the categories of item node as list
          cat = item_node.getRelationships("Belongs_To_Petition_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(item_node)).map(y => y.getProperty("name").toString()).toList
-//         hash_nodes = item_node.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(item_node))
-//         hash_node = hash_nodes(0)
-	     
-//         content = item_node.getProperty("p_content").toString
-         
        }
        
-          val cat_filter = cat.filterNot( x => x.equals("all"))(0)
+          val cat_filter = cat.filterNot( x => x.equals("all"))(0) //remove "all" category from categories
           //var rem = 4
           val ArticleIndex = getNodeIndex("article").get
-          var art_sug = List[org.neo4j.graphdb.Node]()
+          var art_sug = List[org.neo4j.graphdb.Node]()	//this will caontains list of articles i.e., (a_id's articles and present viewing article)
           if(!a_ids.equals(""))
           {
         	  art_sug = a_ids.split(",").toList.map( x => ArticleIndex.get("id",x).getSingle()).filter( y => y != null)
@@ -4819,28 +4813,32 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
           
       
           art_sug :+= item_node
-//          val article_content_index = getNodeIndex("article_content").get
-
-//          var ww = bummy(content)
           
-//          ww = ww.filterNot(toRemove)
-          var articles  = List[Any]()
+          //get the categeories for each article in art_sug i.e., for input a_id's and viewing item
+//          System.out.println("Total articles count including a_id articles : " + art_sug.size)
 
-          var art  = List[org.neo4j.graphdb.Node]()
-//          var trend_tiles  = List[org.neo4j.graphdb.Node]()
-//          var all_trend_tiles  = List[org.neo4j.graphdb.Node]()
+          var articles  = List[Any]() //list of JSON objects that needs to be retuned
+
+          var art  = List[org.neo4j.graphdb.Node]() //list of articles to generate JSONObjects for above articles list variable
 
           val l1 = List("smry","v_users","votes","Commented_Users","Comment_Count","url","ttl","Auth","Auth_FN","img","pubTm","rl","id","cat")
           val l2 = List("FN","UN")
           val l3 = List("Name","UName")
           
-//          if(!ww.equals(""))
-//          {
-//            
-//            val cur_time = (System.currentTimeMillis() /1000).toInt
-//            val w = "*"+ww+"*"
-            art = hash_nodes.map(x => x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.map(_.getOtherNode(x)).sortBy(-_.getProperty("time_created").toString().toInt).filter(x => ((x.getRelationships("Belongs_To_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(x)).map(y => y.getProperty("name").toString()).toList.intersect(cat).size) > 1)).toList.filterNot(x => art_sug.contains(x)).slice(0,count)).flatten.filter( x => x.getProperty("space").toString.toInt == 0).distinct.slice(0,count)
-//	        
+            art = hash_nodes.map(	//for every hash gat from the user input hash tags
+            		x => x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList
+            		.map(_.getOtherNode(x))	//get all the articles nodes of the hash tags
+            		.sortBy(-_.getProperty("time_created").toString().toInt)	//sort it based on time_created
+            		.filter(	//filter the articles based on its category and isClosed property. 
+            		    x => (
+            		        (x.getRelationships("Belongs_To_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(x)) //get the category nodes of each article
+            		            .map(y => y.getProperty("name").toString()).toList.intersect(cat).size) > 1))	//get the article if its category is present in above calculated cat list
+            		.toList
+            		.filterNot(x => art_sug.contains(x)) //remove the articles which are in art_sug (removing the duplicates)
+            		.slice(0,count))	//get top count articles 
+            		.flatten	//convert to single list if it contains list of lists
+            		.filter( x => x.getProperty("space").toString.toInt == 0).distinct.slice(0,count)	//verify if article is open
+
 //          }
           
 //            val TilesIndex = getNodeIndex("tiles").get
@@ -7168,6 +7166,50 @@ def get_trends(cat: String):String =
            
              
     ret         
+    }
+  }
+  
+  def get_user_spaces(user_name: String, relation_type: String):String = {
+    
+    withTx {
+      implicit neo =>
+        var ret = ""        
+        var spaceIndex = getNodeIndex("space").get
+        var allSpaces = spaceIndex.query( "id", "*" ).iterator().asScala.toList
+        var followingSpaces = List[Any]()
+        
+        var userIndex = getNodeIndex("user").get
+        var userNode = userIndex.get("id",user_name).getSingle();
+        
+        val l1 = List("space_id","space_title_id","space_title","space_tagline","space_fut_image","space_time_created","is_closed")
+        var user_following_spaces = List[org.neo4j.graphdb.Node]()
+        if(userNode != null)
+        {
+          if(relation_type.equalsIgnoreCase("f"))
+        	  user_following_spaces = userNode.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
+          else if(relation_type.equalsIgnoreCase("c"))
+        	  user_following_spaces = userNode.getRelationships("Space_Created_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
+          
+          
+           for(eachSpace <- user_following_spaces)
+          followingSpaces :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					            eachSpace.getProperty("space_id").toString(),
+        		  					            eachSpace.getProperty("space_title_id").toString(),
+        		  					            eachSpace.getProperty("space_title").toString(),
+        		  					            eachSpace.getProperty("space_tagline").toString(),
+        		  					            eachSpace.getProperty("space_featured_img").toString(),
+        		  					            eachSpace.getProperty("time_created").toString(),
+        		  					            eachSpace.getProperty("closed").toString()
+        		  					            )
+        		  					            ).toMap
+        		  					            )
+        }
+        
+	    ret = JSONArray(followingSpaces).toString()
+                
+	    ret 
     }
   }
   
