@@ -2870,7 +2870,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
         val location_index = getNodeIndex("location").get
         var out = List[Any]()
         
-        val a_list = List("Comment_Count_Unique","ev","v_users","votes","Commented_Users","Comment_Count","Is_Neo4j","P_Pin","P_Id","P_Author","P_Author_FullName","P_IsMarkedReadLater","P_Title","P_Title_ID","P_Category","P_SubCategory","P_Num_Comments","P_Feature_Image","P_Smry", "P_TimeCreated", "P_EventLocation", "P_EventStartTime", "P_EventAttendStatus", "P_SignsRequired", "P_PetitionSignStatus")
+        val a_list = List("Comment_Count_Unique","ev","v_users","votes","Commented_Users","Comment_Count","Is_Neo4j","P_Pin","P_Id","P_Author","P_Author_FullName","P_IsMarkedReadLater","P_Title","P_Title_ID","P_Category","P_SubCategory","P_Num_Comments","P_Feature_Image","P_Smry", "P_TimeCreated", "P_EventLocation", "P_EventStartTime", "P_EventAttendStatus", "P_SignsRequired", "P_PetitionSignStatus", "Space_Title", "Space_TitleId")
 		val l2 = List("FN","UN")
         val l3 = List("Name","UName")
         // checking if the user is registered or not    
@@ -2927,32 +2927,80 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          if(ArticleIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = ArticleIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,0,JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,true,pin_tiles.contains(item),x.getProperty("article_id"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_title"),x.getProperty("article_title_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Article").asScala.size,x.getProperty("article_featured_img").toString(),x.getProperty("article_summary").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
+		                0,
+		                JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,true,pin_tiles.contains(item),x.getProperty("article_id"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_title"),x.getProperty("article_title_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Article").asScala.size,x.getProperty("article_featured_img").toString(),x.getProperty("article_summary").toString(),x.getProperty("time_created").toString(),"","",false,
+		                "",
+		                false,
+		                x.getRelationships("Article_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Article_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    		    )).toMap)
 					          
 		          }
 		          else if(EventIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = EventIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,1,JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,true,pin_tiles.contains(item),x.getProperty("event_id"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("event_title"),x.getProperty("event_title_id"),x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Event").asScala.size,x.getProperty("event_featured_img").toString(),x.getProperty("event_summary").toString(),x.getProperty("time_created").toString(),x.getProperty("event_location").toString(),x.getProperty("event_date_time").toString(),x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node), "", false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
+		                1,
+		                JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,true,pin_tiles.contains(item),x.getProperty("event_id"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("event_title"),x.getProperty("event_title_id"),x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Event").asScala.size,x.getProperty("event_featured_img").toString(),x.getProperty("event_summary").toString(),x.getProperty("time_created").toString(),x.getProperty("event_location").toString(),x.getProperty("event_date_time").toString(),x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                "",
+		                false,
+    				  x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				      )).toMap)
 					          
 		          }
 		          else if(PetitionIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = PetitionIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,2,JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,pin_tiles.contains(item),x.getProperty("p_id"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("p_title"),x.getProperty("p_title_id"),x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Petition").asScala.size,x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),x.getProperty("time_created").toString(),"","",false,x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,x.getRelationships("Signed_Petition").asScala.map(_.getOtherNode(x)).toList.contains(user_node))).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
+		                2,
+		                JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,pin_tiles.contains(item),x.getProperty("p_id"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("p_title"),x.getProperty("p_title_id"),x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Petition").asScala.size,x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,
+		                x.getRelationships("Signed_Petition").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+    			x.getRelationships("Petition_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Petition_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				                )).toMap)
 					          
 		          }
 		          else if(TownhallIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = TownhallIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,3,JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,true,pin_tiles.contains(item),x.getProperty("t_id"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("t_title"),x.getProperty("t_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Townhall").asScala.size,x.getProperty("t_img_url").toString(),x.getProperty("t_content").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
+		                3,
+		                JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,true,pin_tiles.contains(item),x.getProperty("t_id"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("t_title"),x.getProperty("t_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Townhall").asScala.size,x.getProperty("t_img_url").toString(),x.getProperty("t_content").toString(),x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+    		x.getRelationships("Townhall_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    		x.getRelationships("Townhall_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				                    )).toMap)
 					          
 		          }
 		          else if(DebateIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = DebateIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,4,JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,true,pin_tiles.contains(item),x.getProperty("d_id"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("d_title"),x.getProperty("d_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Debate").asScala.size,x.getProperty("d_img_url").toString(),x.getProperty("d_content").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
-					          
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
+		                4,
+		                JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,true,pin_tiles.contains(item),x.getProperty("d_id"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("d_title"),x.getProperty("d_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Debate").asScala.size,x.getProperty("d_img_url").toString(),x.getProperty("d_content").toString(),x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+    		x.getRelationships("Debate_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Debate_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				  )).toMap ) 			          
 		          }
 		          
 		          
@@ -3002,31 +3050,83 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          if(ArticleIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = ArticleIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,0,JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,true,pin_tiles.contains(item),x.getProperty("article_id"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_title"),x.getProperty("article_title_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Article").asScala.size,x.getProperty("article_featured_img").toString(),x.getProperty("article_summary").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
+		                0,
+		                JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,true,pin_tiles.contains(item),x.getProperty("article_id"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_title"),x.getProperty("article_title_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Article").asScala.size,x.getProperty("article_featured_img").toString(),x.getProperty("article_summary").toString(),x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+		               x.getRelationships("Article_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Article_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    	        )).toMap)
 					          
 		          }
 		          else if(EventIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = EventIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,1,JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,true,pin_tiles.contains(item),x.getProperty("event_id"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("event_title"),x.getProperty("event_title_id"),x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Event").asScala.size,x.getProperty("event_featured_img").toString(),x.getProperty("event_summary").toString(),x.getProperty("time_created").toString(),x.getProperty("event_location").toString(),x.getProperty("event_date_time").toString(),x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node), "", false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
+		                1,
+		                JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,true,pin_tiles.contains(item),x.getProperty("event_id"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("event_title"),x.getProperty("event_title_id"),x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Event").asScala.size,x.getProperty("event_featured_img").toString(),x.getProperty("event_summary").toString(),x.getProperty("time_created").toString(),x.getProperty("event_location").toString(),x.getProperty("event_date_time").toString(),x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                "",
+		                false,
+		                
+    				 x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    	        )).toMap)
 					          
 		          }
 		          else if(PetitionIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = PetitionIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,2,JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,pin_tiles.contains(item),x.getProperty("p_id"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("p_title"),x.getProperty("p_title_id"),x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Petition").asScala.size,x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),x.getProperty("time_created").toString(),"","",false,x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,x.getRelationships("Signed_Petition").asScala.map(_.getOtherNode(x)).toList.contains(user_node))).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
+		                2,
+		                JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,pin_tiles.contains(item),x.getProperty("p_id"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("p_title"),x.getProperty("p_title_id"),x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Petition").asScala.size,x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),x.getProperty("time_created").toString(),"","",false,x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,
+		                x.getRelationships("Signed_Petition").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                
+    				x.getRelationships("Petition_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Petition_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    	        )).toMap)
 					          
 		          }
 		          else if(TownhallIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = TownhallIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,3,JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,true,pin_tiles.contains(item),x.getProperty("t_id"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("t_title"),x.getProperty("t_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Townhall").asScala.size,x.getProperty("t_img_url").toString(),x.getProperty("t_content").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
+		                3,
+		                JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,true,pin_tiles.contains(item),x.getProperty("t_id"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("t_title"),x.getProperty("t_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Townhall").asScala.size,x.getProperty("t_img_url").toString(),x.getProperty("t_content").toString(),x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+		                
+    				 x.getRelationships("Townhall_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Townhall_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    	        )).toMap)
 					          
 		          }
 		          else if(DebateIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = DebateIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,4,JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,true,pin_tiles.contains(item),x.getProperty("d_id"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("d_title"),x.getProperty("d_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Debate").asScala.size,x.getProperty("d_img_url").toString(),x.getProperty("d_content").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
+		                4,
+		                JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,true,pin_tiles.contains(item),x.getProperty("d_id"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("d_title"),x.getProperty("d_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Debate").asScala.size,x.getProperty("d_img_url").toString(),x.getProperty("d_content").toString(),x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+		                
+    				   x.getRelationships("Debate_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Debate_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    		        )).toMap)
 					          
 		          }
 		          
@@ -3072,30 +3172,153 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 			          if(x.getProperty("__CLASS__").toString.equals("Saddahaq.article"))
 			          {
 			            
-			            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,0,JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,true,false,x.getProperty("article_id"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_title"),x.getProperty("article_title_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Article").asScala.size,x.getProperty("article_featured_img").toString(),x.getProperty("article_summary").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+			            out :+= JSONObject(a_list.zip(List(
+			                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
+			                0,
+			                JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),
+			                x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  
+			                JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))), 
+			                x.getRelationships("Comment_To_Article").asScala.size,
+			                true,
+			                false,
+			                x.getProperty("article_id"),
+			                x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+			                x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+			                x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+			                x.getProperty("article_title"),x.getProperty("article_title_id"),
+			                x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+			                x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+			                x.getRelationships("Comment_To_Article").asScala.size,
+			                x.getProperty("article_featured_img").toString(),
+			                x.getProperty("article_summary").toString(),
+			                x.getProperty("time_created").toString(),
+			                "",
+			                "",
+			                false,
+			                "",
+			                false,
+			                x.getRelationships("Article_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Article_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+			                )).toMap)
 						          
 			          }
 			          else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.event"))
 			          {
 			            
-			            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,1,JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,true,false,x.getProperty("event_id"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("event_title"),x.getProperty("event_title_id"),x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Event").asScala.size,x.getProperty("event_featured_img").toString(),x.getProperty("event_summary").toString(),x.getProperty("time_created").toString(),x.getProperty("event_location").toString(),x.getProperty("event_date_time").toString(),x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node), "", false)).toMap)
+			            out :+= JSONObject(a_list.zip(List(
+			                x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,1,JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,
+			                true,
+			                false,
+			                x.getProperty("event_id"),
+			                x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+			                x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+			                x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+			                x.getProperty("event_title"),
+			                x.getProperty("event_title_id"),
+			                x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+			                x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+			                x.getRelationships("Comment_To_Event").asScala.size,
+			                x.getProperty("event_featured_img").toString(),
+			                x.getProperty("event_summary").toString(),
+			                x.getProperty("time_created").toString(),
+			                x.getProperty("event_location").toString(),
+			                x.getProperty("event_date_time").toString(),
+			                x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+			                "",
+			                false,
+			                x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+			                )).toMap)
 						          
 			          }
 			          else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.petition"))
 			          {
 			            
 			            
-			            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,2,JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,false,x.getProperty("p_id"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("p_title"),x.getProperty("p_title_id"),x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Petition").asScala.size,x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),x.getProperty("time_created").toString(),"","",false,x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,x.getRelationships("Signed_Petition").asScala.map(_.getOtherNode(x)).toList.contains(user_node))).toMap)
+			            out :+= JSONObject(a_list.zip(List(
+			                x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,2,JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,
+			                true,
+			                false,
+			                x.getProperty("p_id"),
+			                x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+			                x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+			                x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+			                x.getProperty("p_title"),
+			                x.getProperty("p_title_id"),
+			                x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+			                x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+			                x.getRelationships("Comment_To_Petition").asScala.size,
+			                x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),
+			                x.getProperty("time_created").toString(),
+			                "",
+			                "",
+			                false,
+			                x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,
+			                x.getRelationships("Signed_Petition").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+			                x.getRelationships("Petition_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Petition_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+			                )).toMap)
 						          
 			          }
 			          else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.townhall"))
 			          {
-			            out :+= JSONObject(a_list.zip(List(x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,3,JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,true,false,x.getProperty("t_id"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("t_title"),x.getProperty("t_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Townhall").asScala.size,x.getProperty("t_img_url").toString(),x.getProperty("t_content").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+			            out :+= JSONObject(a_list.zip(List(
+			                x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,3,JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,
+			                true,
+			                false,
+			                x.getProperty("t_id"),
+			                x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+			                x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+			                x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+			                x.getProperty("t_title"),
+			                x.getProperty("t_title_id"),
+			                "",
+			                x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+			                x.getRelationships("Commented_On_Townhall").asScala.size,
+			                x.getProperty("t_img_url").toString(),
+			                x.getProperty("t_content").toString(),
+			                x.getProperty("time_created").toString(),
+			                "",
+			                "",
+			                false,
+			                "",
+			                false,
+			            x.getRelationships("Townhall_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Townhall_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				        
+			            )).toMap)
 						          
 			          }
 			          else
 			          {
-			            out :+= JSONObject(a_list.zip(List(x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,4,JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,true,false,x.getProperty("d_id"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("d_title"),x.getProperty("d_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Debate").asScala.size,x.getProperty("d_img_url").toString(),x.getProperty("d_content").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+			            out :+= JSONObject(a_list.zip(List(
+			                x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,4,JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,
+			                true,
+			                false,
+			                x.getProperty("d_id"),
+			                x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+			                x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+			                x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+			                x.getProperty("d_title"),
+			                x.getProperty("d_title_id"),
+			                "",
+			                x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+			                x.getRelationships("Commented_On_Debate").asScala.size,
+			                x.getProperty("d_img_url").toString(),
+			                x.getProperty("d_content").toString(),
+			                x.getProperty("time_created").toString(),
+			                "",
+			                "",
+			                false,
+			                "",
+			                false,
+			                x.getRelationships("Debate_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Debate_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+			                )).toMap)
 						          
 			          }
 			      }
@@ -3115,31 +3338,151 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          if(ArticleIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = ArticleIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,0,JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,true,pin_tiles.contains(item),x.getProperty("article_id"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_title"),x.getProperty("article_title_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Article").asScala.size,x.getProperty("article_featured_img").toString(),x.getProperty("article_summary").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,0,JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,
+		                true,
+		                pin_tiles.contains(item),
+		                x.getProperty("article_id"),
+		                x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getProperty("article_title"),
+		                x.getProperty("article_title_id"),
+		                x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+		                x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Comment_To_Article").asScala.size,
+		                x.getProperty("article_featured_img").toString(),
+		                x.getProperty("article_summary").toString(),
+		                x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+		                x.getRelationships("Article_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Article_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+		            )).toMap)
 					          
 		          }
 		          else if(EventIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = EventIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,1,JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,true,pin_tiles.contains(item),x.getProperty("event_id"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("event_title"),x.getProperty("event_title_id"),x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Event").asScala.size,x.getProperty("event_featured_img").toString(),x.getProperty("event_summary").toString(),x.getProperty("time_created").toString(),x.getProperty("event_location").toString(),x.getProperty("event_date_time").toString(),x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node), "", false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
+		                1,
+		                JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),
+		                x.getRelationships("Comment_To_Event").asScala.size,
+		                true,
+		                pin_tiles.contains(item),
+		                x.getProperty("event_id"),
+		                x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getProperty("event_title"),
+		                x.getProperty("event_title_id"),
+		                x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+		                x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Comment_To_Event").asScala.size,
+		                x.getProperty("event_featured_img").toString(),
+		                x.getProperty("event_summary").toString(),
+		                x.getProperty("time_created").toString(),
+		                x.getProperty("event_location").toString(),
+		                x.getProperty("event_date_time").toString(),
+		                x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                "", 
+		                false,
+		                x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+		                )).toMap)
 					          
 		          }
 		          else if(PetitionIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = PetitionIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,2,JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,pin_tiles.contains(item),x.getProperty("p_id"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("p_title"),x.getProperty("p_title_id"),x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Petition").asScala.size,x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),x.getProperty("time_created").toString(),"","",false,x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,x.getRelationships("Signed_Petition").asScala.map(_.getOtherNode(x)).toList.contains(user_node))).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,2,JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,pin_tiles.contains(item),
+		                x.getProperty("p_id"),
+		                x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getProperty("p_title"),
+		                x.getProperty("p_title_id"),
+		                x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+		                x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Comment_To_Petition").asScala.size,
+		                x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),
+		                x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,
+		                x.getRelationships("Signed_Petition").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getRelationships("Petition_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Petition_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+		                )).toMap)
 					          
 		          }
 		          else if(TownhallIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = TownhallIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,3,JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,true,pin_tiles.contains(item),x.getProperty("t_id"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("t_title"),x.getProperty("t_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Townhall").asScala.size,x.getProperty("t_img_url").toString(),x.getProperty("t_content").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
+		                3,
+		                JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  
+		                x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  
+		                JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,true,pin_tiles.contains(item),x.getProperty("t_id"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getProperty("t_title"),
+		                x.getProperty("t_title_id"),
+		                "",
+		                x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Commented_On_Townhall").asScala.size,
+		                x.getProperty("t_img_url").toString(),
+		                x.getProperty("t_content").toString(),
+		                x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+		                x.getRelationships("Townhall_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Townhall_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+		                )).toMap)
 					          
 		          }
 		          else if(DebateIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = DebateIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,4,JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,true,pin_tiles.contains(item),x.getProperty("d_id"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("d_title"),x.getProperty("d_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Debate").asScala.size,x.getProperty("d_img_url").toString(),x.getProperty("d_content").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,4,JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),
+		                x.getRelationships("Commented_On_Debate").asScala.size,
+		                true,
+		                pin_tiles.contains(item),
+		                x.getProperty("d_id"),
+		                x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getProperty("d_title"),
+		                x.getProperty("d_title_id"),
+		                "",
+		                x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Commented_On_Debate").asScala.size,
+		                x.getProperty("d_img_url").toString(),
+		                x.getProperty("d_content").toString(),
+		                x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+		                x.getRelationships("Debate_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Debate_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+		                )).toMap)
 					          
 		          }
 		          
@@ -3247,31 +3590,171 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          if(ArticleIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = ArticleIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,0,JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,true,pin_tiles.contains(item),x.getProperty("article_id"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_title"),x.getProperty("article_title_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Article").asScala.size,x.getProperty("article_featured_img").toString(),x.getProperty("article_summary").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,0,JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))), 
+		                x.getRelationships("Comment_To_Article").asScala.size,
+		                true,
+		                pin_tiles.contains(item),
+		                x.getProperty("article_id"),
+		                x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getProperty("article_title"),
+		                x.getProperty("article_title_id"),
+		                x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+		                x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Comment_To_Article").asScala.size,
+		                x.getProperty("article_featured_img").toString(),
+		                x.getProperty("article_summary").toString(),
+		                x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+		                x.getRelationships("Article_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Article_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+		                )).toMap)
 					          
 		          }
 		          else if(EventIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = EventIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,1,JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,true,pin_tiles.contains(item),x.getProperty("event_id"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("event_title"),x.getProperty("event_title_id"),x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Event").asScala.size,x.getProperty("event_featured_img").toString(),x.getProperty("event_summary").toString(),x.getProperty("time_created").toString(),x.getProperty("event_location").toString(),x.getProperty("event_date_time").toString(),x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node), "", false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
+		                1,
+		                JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))), 
+		                x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,
+		                JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  
+		                x.getRelationships("Comment_To_Event").asScala.size,
+		                true,
+		                pin_tiles.contains(item),
+		                x.getProperty("event_id"),
+		                x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getProperty("event_title"),
+		                x.getProperty("event_title_id"),
+		                x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+		                x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Comment_To_Event").asScala.size,
+		                x.getProperty("event_featured_img").toString(),
+		                x.getProperty("event_summary").toString(),
+		                x.getProperty("time_created").toString(),
+		                x.getProperty("event_location").toString(),
+		                x.getProperty("event_date_time").toString(),
+		                x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                "", 
+		                false,
+		                x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+		                )).toMap)
 					          
 		          }
 		          else if(PetitionIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = PetitionIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,2,JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,pin_tiles.contains(item),x.getProperty("p_id"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("p_title"),x.getProperty("p_title_id"),x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Petition").asScala.size,x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),x.getProperty("time_created").toString(),"","",false,x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,x.getRelationships("Signed_Petition").asScala.map(_.getOtherNode(x)).toList.contains(user_node))).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
+		                2,
+		                JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))), 
+		                x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  
+		                JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  
+		                x.getRelationships("Comment_To_Petition").asScala.size,
+		                true,
+		                pin_tiles.contains(item),
+		                x.getProperty("p_id"),
+		                x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("p_title"),
+		                x.getProperty("p_title_id"),
+		                x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+		                x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Comment_To_Petition").asScala.size,
+		                x.getProperty("p_img_url").toString(),
+		                x.getProperty("p_content").toString(),
+		                x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,
+		                x.getRelationships("Signed_Petition").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getRelationships("Petition_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Petition_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+		                )).toMap)
 					          
 		          }
 		          else if(TownhallIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = TownhallIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,3,JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,true,pin_tiles.contains(item),x.getProperty("t_id"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("t_title"),x.getProperty("t_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Townhall").asScala.size,x.getProperty("t_img_url").toString(),x.getProperty("t_content").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
+		                3,
+		                JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),
+		                x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  
+		                JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  
+		                x.getRelationships("Commented_On_Townhall").asScala.size,
+		                true,
+		                pin_tiles.contains(item),
+		                x.getProperty("t_id"),
+		                x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getProperty("t_title"),
+		                x.getProperty("t_title_id"),
+		                "",
+		                x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Commented_On_Townhall").asScala.size,
+		                x.getProperty("t_img_url").toString(),
+		                x.getProperty("t_content").toString(),
+		                x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+		                x.getRelationships("Townhall_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Townhall_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+		                )).toMap)
 					          
 		          }
 		          else if(DebateIndex.get("id",item).getSingle() != null)
 		          {
 		            val x = DebateIndex.get("id",item).getSingle()
-		            out :+= JSONObject(a_list.zip(List(x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,4,JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,true,pin_tiles.contains(item),x.getProperty("d_id"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("d_title"),x.getProperty("d_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Debate").asScala.size,x.getProperty("d_img_url").toString(),x.getProperty("d_content").toString(),x.getProperty("time_created").toString(),"","",false,"",false)).toMap)
+		            out :+= JSONObject(a_list.zip(List(
+		                x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
+		                4,
+		                JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  
+		                x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  
+		                JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  
+		                x.getRelationships("Commented_On_Debate").asScala.size,
+		                true,
+		                pin_tiles.contains(item),
+		                x.getProperty("d_id"),
+		                x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getProperty("d_title"),
+		                x.getProperty("d_title_id"),
+		                "",
+		                x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Commented_On_Debate").asScala.size,
+		                x.getProperty("d_img_url").toString(),
+		                x.getProperty("d_content").toString(),
+		                x.getProperty("time_created").toString(),
+		                "",
+		                "",
+		                false,
+		                "",
+		                false,
+		                x.getRelationships("Debate_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
+    				    x.getRelationships("Debate_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title_id")).toList.mkString(",")
+    				    
+		                )).toMap)
 					          
 		          }
 		          
@@ -7176,23 +7659,26 @@ def get_trends(cat: String):String =
         var ret = ""        
         var spaceIndex = getNodeIndex("space").get
         var allSpaces = spaceIndex.query( "id", "*" ).iterator().asScala.toList
-        var followingSpaces = List[Any]()
+        var relatedSpaces = List[Any]()
         
         var userIndex = getNodeIndex("user").get
         var userNode = userIndex.get("id",user_name).getSingle();
+        val a_list = List("Comment_Count_Unique","ev","v_users","votes","Commented_Users","Comment_Count","Is_Neo4j","P_Pin","P_Id","P_Author","P_Author_FullName","P_IsMarkedReadLater","P_Title","P_Title_ID","P_Category","P_SubCategory","P_Num_Comments","P_Feature_Image","P_Smry", "P_TimeCreated", "P_EventLocation", "P_EventStartTime", "P_EventAttendStatus", "P_SignsRequired", "P_PetitionSignStatus", "Space_Title", "Space_TitleId")
+		val l2 = List("FN","UN")
+        val l3 = List("Name","UName")
         
-        val l1 = List("space_id","space_title_id","space_title","space_tagline","space_fut_image","space_time_created","is_closed")
-        var user_following_spaces = List[org.neo4j.graphdb.Node]()
+        //val l1 = List("space_id","space_title_id","space_title","space_tagline","space_fut_image","space_time_created","is_closed")
+        var user_related_spaces = List[org.neo4j.graphdb.Node]()
         if(userNode != null)
         {
           if(relation_type.equalsIgnoreCase("f"))
-        	  user_following_spaces = userNode.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
+        	  user_related_spaces = userNode.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
           else if(relation_type.equalsIgnoreCase("c"))
-        	  user_following_spaces = userNode.getRelationships("Space_Created_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
+        	  user_related_spaces = userNode.getRelationships("Space_Created_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
           
           
-           for(eachSpace <- user_following_spaces)
-          followingSpaces :+= JSONObject(
+          /*for(eachSpace <- user_related_spaces)
+          relatedSpaces :+= JSONObject(
         		  					    l1.zip(
         		  					        List(
         		  					            eachSpace.getProperty("space_id").toString(),
@@ -7204,14 +7690,53 @@ def get_trends(cat: String):String =
         		  					            eachSpace.getProperty("closed").toString()
         		  					            )
         		  					            ).toMap
+        		  					            ) */
+        
+        	  
+        //for(eachSpace <- user_related_spaces)
+          relatedSpaces = user_related_spaces.map(eachSpace => JSONObject(
+        		  					    a_list.zip(
+        		  					        List(
+        		  					            0, //Comment_Count
+        		  					            5, //ev
+        		  					            JSONArray(eachSpace.getRelationships("Space_Followed_By").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(eachSpace)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),   //v_uesrs - list of voted users i.e., list of followers
+        		  					            eachSpace.getRelationships("Space_Followed_By").asScala.toList.size-eachSpace.getRelationships("Space_Followed_By").asScala.toList.slice(0,2).size, //number of votes i.e., number of followers
+        		  					            "",	//commented users
+        		  					            0,	//number of comments
+        		  					            true,	//Is_Neo4j
+        		  					            false,	//P_Pin is space is pinned or not
+        		  					            eachSpace.getProperty("space_id").toString(),	//p_id	space id
+        		  					            eachSpace.getSingleRelationship("Space_Created_By", Direction.OUTGOING).getEndNode().getProperty("user_name").toString(),//space author user name
+        		  					            eachSpace.getSingleRelationship("Space_Created_By", Direction.OUTGOING).getEndNode().getProperty("first_name").toString() + " " + eachSpace.getSingleRelationship("Space_Created_By", Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),//space author first name + last name
+        		  					            false, //Is_Marked_read later
+        		  					            eachSpace.getProperty("space_title").toString(), //P-Title
+        		  					            eachSpace.getProperty("space_title_id").toString(), //P_Title_Id
+        		  					            "",	//P_Category
+        		  					            "",	//P_Sub_Category i.e., hash_tags
+        		  					            "", //P_Num_Comments
+        		  					            eachSpace.getProperty("space_featured_img").toString(), //P_Feature_Image
+        		  					            eachSpace.getProperty("space_tagline").toString(),	//P_Smry
+        		  					            eachSpace.getProperty("time_created").toString(),
+        		  					            "",	//P_Event_Location
+        		  					            "",	//P_Event_start_Time
+        		  					            false,	//P_Event_Attend_Status
+        		  					            "",	//P_Signs_Required
+        		  					            false, //P_Signs_Status
+        		  					            eachSpace.getProperty("space_title").toString(), //Space_Title
+        		  					            eachSpace.getProperty("space_title_id").toString() //Space_Title_Id
         		  					            )
+        		  					            ).toMap
+        		  					            ))
         }
         
-	    ret = JSONArray(followingSpaces).toString()
+	    ret = JSONArray(relatedSpaces).toString()
                 
 	    ret 
     }
   }
+  
+  
+  
   
   def get_followersfeed(
       feed_type: String
@@ -8291,11 +8816,18 @@ def get_trends(cat: String):String =
        
        val art_index = getNodeIndex("article").get
        val art_nodes = art_index.query( "id", "*" ).iterator().asScala.toList
-       val t = (System.currentTimeMillis()/1000).toInt - (14400)
+       //current time in sec - 4 hours
+       val t = (System.currentTimeMillis()/1000).toInt - (14400) //i.e., 4 hours ago time
        for(each <- art_nodes) 
        {
          var nonuser_views = 0
+         //get all the view relations count happend in last 4 hours to each article
          val user_views = each.getRelationships("Viewed_By").asScala.toList.filter(x => x.getProperty("time").toString().toInt > t).size
+         
+         //get the count of non user views for each article.
+         //if it is empty, mark update the view count with user_views
+         //if it is not empty, get the number of non user views (For every non user view, latest_views will be updated with comma separated time in seconds
+         //														  For every login user view,  View_By relation will be created b/w article and present user)
          val latest_views = each.getProperty("latest_views").toString()
          if(!latest_views.equals(""))
          {
@@ -8306,6 +8838,7 @@ def get_trends(cat: String):String =
          each.setProperty("views",( (user_views*5) + nonuser_views) )
        }
        
+       //same are article
        val event_index = getNodeIndex("event").get
        val event_nodes = event_index.query( "id", "*" ).iterator().asScala.toList
        for(each <- event_nodes) 
@@ -8322,6 +8855,7 @@ def get_trends(cat: String):String =
          each.setProperty("views",user_views + nonuser_views)
        }
        
+       //same are article
        val p_index = getNodeIndex("petition").get
        val p_nodes = p_index.query( "id", "*" ).iterator().asScala.toList
        for(each <- p_nodes) 
