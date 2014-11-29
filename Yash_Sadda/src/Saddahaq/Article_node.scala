@@ -3053,7 +3053,24 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		            out :+= JSONObject(a_list.zip(List(
 		                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 		                0,
-		                JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,true,pin_tiles.contains(item),x.getProperty("article_id"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_title"),x.getProperty("article_title_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Article").asScala.size,x.getProperty("article_featured_img").toString(),x.getProperty("article_summary").toString(),x.getProperty("time_created").toString(),
+		                JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),
+		                x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,
+		                JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))), 
+		                x.getRelationships("Comment_To_Article").asScala.size,
+		                true,
+		                pin_tiles.contains(item),
+		                x.getProperty("article_id"),
+		                x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                x.getProperty("article_title"),
+		                x.getProperty("article_title_id"),
+		                x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+		                x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                x.getRelationships("Comment_To_Article").asScala.size,
+		                x.getProperty("article_featured_img").toString(),
+		                x.getProperty("article_summary").toString(),
+		                x.getProperty("time_created").toString(),
 		                "",
 		                "",
 		                false,
@@ -5300,16 +5317,77 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
           //get the categeories for each article in art_sug i.e., for input a_id's and viewing item
 //          System.out.println("Total articles count including a_id articles : " + art_sug.size)
 
-          var articles  = List[Any]() //list of JSON objects that needs to be retuned
+          var result  = List[Any]() //list of JSON objects that needs to be retuned
 
           var art  = List[org.neo4j.graphdb.Node]() //list of articles to generate JSONObjects for above articles list variable
+          var evt  = List[org.neo4j.graphdb.Node]() //list of events to generate JSONObjects for above related events list
+          var pet  = List[org.neo4j.graphdb.Node]() //list of petitions to generate JSONObjects for above related petitions list
+          var tow  = List[org.neo4j.graphdb.Node]() //list of townhalls to generate JSONObjects for above related townhalls list
+          var deb  = List[org.neo4j.graphdb.Node]() //list of debates to generate JSONObjects for above related debates list
 
-          val l1 = List("smry","v_users","votes","Commented_Users","Comment_Count","url","ttl","Auth","Auth_FN","img","pubTm","rl","id","cat")
+          val l1 = List("ev","smry","v_users","votes","Commented_Users","Comment_Count","url","ttl","Auth","Auth_FN","img","pubTm","rl","id","cat")
           val l2 = List("FN","UN")
           val l3 = List("Name","UName")
           
             art = hash_nodes.map(	//for every hash gat from the user input hash tags
             		x => x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList
+            		.map(_.getOtherNode(x))	//get all the articles nodes of the hash tags
+            		.sortBy(-_.getProperty("time_created").toString().toInt)	//sort it based on time_created
+            		.filter(	//filter the articles based on its category and isClosed property. 
+            		    x => (
+            		        (x.getRelationships("Belongs_To_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(x)) //get the category nodes of each article
+            		            .map(y => y.getProperty("name").toString()).toList.intersect(cat).size) > 1))	//get the article if its category is present in above calculated cat list
+            		.toList
+            		.filterNot(x => art_sug.contains(x)) //remove the articles which are in art_sug (removing the duplicates)
+            		.slice(0,count))	//get top count articles 
+            		.flatten	//convert to single list if it contains list of lists
+            		.filter( x => x.getProperty("space").toString.toInt == 0).distinct.slice(0,count)	//verify if article is open
+
+            		          
+            evt = hash_nodes.map(	//for every hash gat from the user input hash tags
+            		x => x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList
+            		.map(_.getOtherNode(x))	//get all the articles nodes of the hash tags
+            		.sortBy(-_.getProperty("time_created").toString().toInt)	//sort it based on time_created
+            		.filter(	//filter the articles based on its category and isClosed property. 
+            		    x => (
+            		        (x.getRelationships("Belongs_To_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(x)) //get the category nodes of each article
+            		            .map(y => y.getProperty("name").toString()).toList.intersect(cat).size) > 1))	//get the article if its category is present in above calculated cat list
+            		.toList
+            		.filterNot(x => art_sug.contains(x)) //remove the articles which are in art_sug (removing the duplicates)
+            		.slice(0,count))	//get top count articles 
+            		.flatten	//convert to single list if it contains list of lists
+            		.filter( x => x.getProperty("space").toString.toInt == 0).distinct.slice(0,count)	//verify if article is open
+          
+            pet = hash_nodes.map(	//for every hash gat from the user input hash tags
+            		x => x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList
+            		.map(_.getOtherNode(x))	//get all the articles nodes of the hash tags
+            		.sortBy(-_.getProperty("time_created").toString().toInt)	//sort it based on time_created
+            		.filter(	//filter the articles based on its category and isClosed property. 
+            		    x => (
+            		        (x.getRelationships("Belongs_To_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(x)) //get the category nodes of each article
+            		            .map(y => y.getProperty("name").toString()).toList.intersect(cat).size) > 1))	//get the article if its category is present in above calculated cat list
+            		.toList
+            		.filterNot(x => art_sug.contains(x)) //remove the articles which are in art_sug (removing the duplicates)
+            		.slice(0,count))	//get top count articles 
+            		.flatten	//convert to single list if it contains list of lists
+            		.filter( x => x.getProperty("space").toString.toInt == 0).distinct.slice(0,count)	//verify if article is open
+          
+            tow = hash_nodes.map(	//for every hash gat from the user input hash tags
+            		x => x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList
+            		.map(_.getOtherNode(x))	//get all the articles nodes of the hash tags
+            		.sortBy(-_.getProperty("time_created").toString().toInt)	//sort it based on time_created
+            		.filter(	//filter the articles based on its category and isClosed property. 
+            		    x => (
+            		        (x.getRelationships("Belongs_To_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(x)) //get the category nodes of each article
+            		            .map(y => y.getProperty("name").toString()).toList.intersect(cat).size) > 1))	//get the article if its category is present in above calculated cat list
+            		.toList
+            		.filterNot(x => art_sug.contains(x)) //remove the articles which are in art_sug (removing the duplicates)
+            		.slice(0,count))	//get top count articles 
+            		.flatten	//convert to single list if it contains list of lists
+            		.filter( x => x.getProperty("space").toString.toInt == 0).distinct.slice(0,count)	//verify if article is open
+          
+            deb = hash_nodes.map(	//for every hash gat from the user input hash tags
+            		x => x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList
             		.map(_.getOtherNode(x))	//get all the articles nodes of the hash tags
             		.sortBy(-_.getProperty("time_created").toString().toInt)	//sort it based on time_created
             		.filter(	//filter the articles based on its category and isClosed property. 
@@ -5346,19 +5424,153 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		    
 //		    art = art.filterNot( x => art_sug.contains(x)).slice(0,count)
 //            art = hash_node.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.map(_.getOtherNode(hash_node)).sortBy(-_.getProperty("time_created").toString().toInt).filter(x => ((x.getRelationships("Belongs_To_Category",Direction.OUTGOING).asScala.map(_.getOtherNode(x)).map(y => y.getProperty("name").toString()).toList.intersect(cat).size) > 1)).toList.filterNot(x => art_sug.contains(x)).slice(0,count)
-
+//
 		    if(user_node == null  || user_name.equals(""))
 		    {
-		    	articles = art.map(x => JSONObject(l1.zip(List(x.getProperty("article_summary"), JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y => y.getOtherNode(x)).map( z =>  JSONObject(l3.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap)))   ,x.getRelationships("article_voteup").asScala.toList.size - x.getRelationships("article_voteup").asScala.toList.slice(0,2).size, JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y => y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map( z =>  JSONObject(l2.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap)))     ,x.getRelationships("Comment_To_Article").asScala.size,"/" + x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0) + "/" + x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter( y => y.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(",") + "/" + x.getProperty("article_title_id"),x.getProperty("article_title"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("first_name") +" " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("last_name"),x.getProperty("article_featured_img"),x.getProperty("time_created"),  false,x.getProperty("article_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0))).toMap))
+		      //for(x <- (art ::: evt ::: pet ::: tow ::: deb ).sortBy(_.getProperty("time_created").toString().toInt).distinct.slice(0,count))
+          		
+		      for(x <- art)
+		        if(x.getProperty("__CLASS__").toString.equals("Saddahaq.article")){
+          		result :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					        		0,
+        		  					        		x.getProperty("article_summary"), //"smry"
+        		  					        		JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y => y.getOtherNode(x)).map( z =>  JSONObject(l3.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap))),	//v+users
+        		  					        		x.getRelationships("article_voteup").asScala.toList.size - x.getRelationships("article_voteup").asScala.toList.slice(0,2).size, 	//votes
+        		  					        		JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y => y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map( z =>  JSONObject(l2.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap))),	//commented_users
+        		  					        		x.getRelationships("Comment_To_Article").asScala.size,	//comment_count
+        		  					        		"/" + x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0) + "/" + x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter( y => y.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(",") + "/" + x.getProperty("article_title_id"),	//url
+        		  					        		x.getProperty("article_title"),	//ttl
+        		  					        		x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("user_name"),	//Auth
+        		  					        		x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("first_name") +" " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("last_name"),	//Auth_FN
+        		  					        		x.getProperty("article_featured_img"),	//img
+        		  					        		x.getProperty("time_created"),	//PubTm
+        		  					        		false,	//rl
+        		  					        		x.getProperty("article_id"),	//id
+        		  					        		x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0)	//cat
+        		  					        		)
+        		  					            ).toMap
+        		  					            )
+		        }/*else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.event")){ //1
+          		result :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					        		1,
+        		  					        		x.getProperty("event_summary"), //"smry"
+        		  					        		JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y => y.getOtherNode(x)).map( z =>  JSONObject(l3.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap))),	//v+users
+        		  					        		
+        		  					        		)
+        		  					        		).toMap
+        		  					        		)		          
+		        }else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.petition")){ //2
+          		result :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					        		2,
+        		  					        		x.getProperty("article_summary"), //"smry"
+        		  					        		)
+        		  					        		).toMap
+        		  					        		)	
+		          
+		        }else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.townhall")){ //3
+          		result :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					        		3,
+        		  					        		x.getProperty("article_summary"), //"smry"
+        		  					        		)
+        		  					        		).toMap
+        		  					        		)	
+		          
+		        }else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.debate")){ //4
+          		result :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					        		4,
+        		  					        		x.getProperty("article_summary"), //"smry"
+        		  					        		)
+        		  					        		).toMap
+        		  					        		)	
+		          
+		        }*/
+        		  					            
+		    	//result = art.map(x => JSONObject(l1.zip(List(x.getProperty("article_summary"), JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y => y.getOtherNode(x)).map( z =>  JSONObject(l3.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap)))   ,x.getRelationships("article_voteup").asScala.toList.size - x.getRelationships("article_voteup").asScala.toList.slice(0,2).size, JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y => y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map( z =>  JSONObject(l2.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap)))     ,x.getRelationships("Comment_To_Article").asScala.size,"/" + x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0) + "/" + x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter( y => y.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(",") + "/" + x.getProperty("article_title_id"),x.getProperty("article_title"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("first_name") +" " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("last_name"),x.getProperty("article_featured_img"),x.getProperty("time_created"),  false,x.getProperty("article_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0))).toMap))
 
 		    }
 		    
 		    else
 		    {
-		      articles = art.map(x => JSONObject(l1.zip(List(x.getProperty("article_summary"), JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y => y.getOtherNode(x)).map( z =>  JSONObject(l3.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap)))   ,x.getRelationships("article_voteup").asScala.toList.size - x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y => y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map( z =>  JSONObject(l2.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap))),x.getRelationships("Comment_To_Article").asScala.size,"/" + x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0) + "/" + x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter( y => y.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(",") + "/" + x.getProperty("article_title_id"),x.getProperty("article_title"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("first_name") +" " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("last_name"),x.getProperty("article_featured_img"),x.getProperty("time_created"),  x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0))).toMap))
+		      //for(x <- (art ::: evt ::: pet ::: tow ::: deb ).sortBy(_.getProperty("time_created").toString().toInt).distinct.slice(0,count))
+          		
+		      for(x <- art)
+          		if(x.getProperty("__CLASS__").toString.equals("Saddahaq.article")){
+		        result :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					        		0,
+        		  					        		x.getProperty("article_summary"), //smry
+        		  					        		JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y => y.getOtherNode(x)).map( z =>  JSONObject(l3.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap))),	//v_users
+        		  					        		x.getRelationships("article_voteup").asScala.toList.size - x.getRelationships("article_voteup").asScala.toList.slice(0,2).size, //votes 
+        		  					        		JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y => y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map( z =>  JSONObject(l2.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap))),	//commented_users
+        		  					        		x.getRelationships("Comment_To_Article").asScala.size,	//comment_count
+        		  					        		"/" + x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0) + "/" + x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter( y => y.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(",") + "/" + x.getProperty("article_title_id"),	//url
+        		  					        		x.getProperty("article_title"),	//title
+        		  					        		x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("user_name"),	//auth
+        		  					        		x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("first_name") +" " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("last_name"),	//auth_FN
+        		  					        		x.getProperty("article_featured_img"),	//img
+        		  					        		x.getProperty("time_created"),  //PubTm
+        		  					        		x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),	//rl
+        		  					        		x.getProperty("article_id"),	//id
+        		  					        		x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0)	//cat
+        		  					        	)
+        		  					            ).toMap
+        		  					            )
+        		}/*else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.event")){	//1
+          		result :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					        		1,
+        		  					        		x.getProperty("event_summary"), //"smry"
+        		  					        		)
+        		  					        		).toMap
+        		  					        		)	
+		          
+		        }else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.petition")){	//2
+          		result :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					        		2,
+        		  					        		x.getProperty("article_summary"), //"smry"
+        		  					        		)
+        		  					        		).toMap
+        		  					        		)	
+		          
+		        }else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.townhall")){	//3
+          		result :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					        		3,
+        		  					        		x.getProperty("article_summary"), //"smry"
+        		  					        		)
+        		  					        		).toMap
+        		  					        		)	
+		          
+		        }else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.debate")){	//4
+          		result :+= JSONObject(
+        		  					    l1.zip(
+        		  					        List(
+        		  					        		4,
+        		  					        		x.getProperty("article_summary"), //"smry"
+        		  					        		)
+        		  					        		).toMap
+        		  					        		)	
+		          
+		        }*/
+//		      result = art.map(x => JSONObject(l1.zip(List(x.getProperty("article_summary"), JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y => y.getOtherNode(x)).map( z =>  JSONObject(l3.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap)))   ,x.getRelationships("article_voteup").asScala.toList.size - x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y => y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map( z =>  JSONObject(l2.zip(List( (z.getProperty("first_name").toString() + " " + z.getProperty("last_name").toString()),z.getProperty("user_name").toString()  ) ).toMap))),x.getRelationships("Comment_To_Article").asScala.size,"/" + x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0) + "/" + x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter( y => y.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(",") + "/" + x.getProperty("article_title_id"),x.getProperty("article_title"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("first_name") +" " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getOtherNode(x).getProperty("last_name"),x.getProperty("article_featured_img"),x.getProperty("time_created"),  x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0))).toMap))
 
 		    }
-         JSONArray(articles).toString()
+         JSONArray(result).toString()
      
   }
   
