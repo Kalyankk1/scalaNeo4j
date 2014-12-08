@@ -2869,8 +2869,12 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
         val PetitionIndex = getNodeIndex("petition").get
         val location_index = getNodeIndex("location").get
         var out = List[Any]()
-        
-        val a_list = List("Comment_Count_Unique","ev","v_users","votes","Commented_Users","Comment_Count","Is_Neo4j","P_Pin","P_Id","P_Author","P_Author_FullName","P_IsMarkedReadLater","P_Title","P_Title_ID","P_Category","P_SubCategory","P_Num_Comments","P_Feature_Image","P_Smry", "P_TimeCreated", "P_EventLocation", "P_EventStartTime", "P_EventAttendStatus", "P_SignsRequired", "P_PetitionSignStatus", "Space_Title", "Space_TitleId")
+        /*
+         * P_EventEndTime should be placed after P_EventStartTime
+         * As the JSON is complicated, assigning ""(empty string) for P_EventEndTime has to updated in large number of location.
+         * For simplicity, placing P_EventEndTime at the begining
+         */
+        val a_list = List("P_EventEndTime","Comment_Count_Unique","ev","v_users","votes","Commented_Users","Comment_Count","Is_Neo4j","P_Pin","P_Id","P_Author","P_Author_FullName","P_IsMarkedReadLater","P_Title","P_Title_ID","P_Category","P_SubCategory","P_Num_Comments","P_Feature_Image","P_Smry", "P_TimeCreated", "P_EventLocation", "P_EventStartTime", "P_EventAttendStatus", "P_SignsRequired", "P_PetitionSignStatus", "Space_Title", "Space_TitleId")
 		val l2 = List("FN","UN")
         val l3 = List("Name","UName")
         // checking if the user is registered or not    
@@ -2928,6 +2932,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = ArticleIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",//P_EventEndTime
 		                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 		                0,
 		                JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,true,pin_tiles.contains(item),x.getProperty("article_id"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Article_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("article_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("article_title"),x.getProperty("article_title_id"),x.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Article").asScala.size,x.getProperty("article_featured_img").toString(),x.getProperty("article_summary").toString(),x.getProperty("time_created").toString(),"","",false,
@@ -2942,9 +2947,31 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = EventIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                x.getProperty("event_date_time_closing").toString(),	//P_EventEndTime 
 		                x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 		                1,
-		                JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,true,pin_tiles.contains(item),x.getProperty("event_id"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("event_title"),x.getProperty("event_title_id"),x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Event").asScala.size,x.getProperty("event_featured_img").toString(),x.getProperty("event_summary").toString(),x.getProperty("time_created").toString(),x.getProperty("event_location").toString(),x.getProperty("event_date_time").toString(),x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))), 
+		                x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  
+		                JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),
+		                    z.getProperty("user_name").toString())).toMap))), 
+		                    x.getRelationships("Comment_To_Event").asScala.size,
+		                    true,
+		                    pin_tiles.contains(item),
+		                    x.getProperty("event_id"),
+		                    x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
+		                    x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),
+		                    x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
+		                    x.getProperty("event_title"),
+		                    x.getProperty("event_title_id"),
+		                    x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),
+		                    x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),
+		                    x.getRelationships("Comment_To_Event").asScala.size,
+		                    x.getProperty("event_featured_img").toString(),
+		                    x.getProperty("event_summary").toString(),
+		                    x.getProperty("time_created").toString(),
+		                    x.getProperty("event_location").toString(),
+		                    x.getProperty("event_date_time").toString(),
+		                    x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
 		                "",
 		                false,
     				  x.getRelationships("Event_Tagged_To_Space").asScala.toList.map(_.getOtherNode(x)).map(_.getProperty("space_title")).toList.mkString(","),
@@ -2956,6 +2983,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = PetitionIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 		                2,
 		                JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,pin_tiles.contains(item),x.getProperty("p_id"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("p_title"),x.getProperty("p_title_id"),x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Petition").asScala.size,x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),x.getProperty("time_created").toString(),
@@ -2973,6 +3001,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = TownhallIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
 		                3,
 		                JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,true,pin_tiles.contains(item),x.getProperty("t_id"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("t_title"),x.getProperty("t_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Townhall").asScala.size,x.getProperty("t_img_url").toString(),x.getProperty("t_content").toString(),x.getProperty("time_created").toString(),
@@ -2990,6 +3019,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = DebateIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
 		                4,
 		                JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,true,pin_tiles.contains(item),x.getProperty("d_id"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("d_title"),x.getProperty("d_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Debate").asScala.size,x.getProperty("d_img_url").toString(),x.getProperty("d_content").toString(),x.getProperty("time_created").toString(),
@@ -3051,6 +3081,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = ArticleIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 		                0,
 		                JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),
@@ -3085,6 +3116,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = EventIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                x.getProperty("event_date_time_closing").toString(),	//P_EventEndTime 
 		                x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 		                1,
 		                JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,true,pin_tiles.contains(item),x.getProperty("event_id"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("event_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("event_title"),x.getProperty("event_title_id"),x.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Event").asScala.size,x.getProperty("event_featured_img").toString(),x.getProperty("event_summary").toString(),x.getProperty("time_created").toString(),x.getProperty("event_location").toString(),x.getProperty("event_date_time").toString(),x.getRelationships("Is_Attending").asScala.map(_.getOtherNode(x)).toList.contains(user_node),
@@ -3100,6 +3132,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = PetitionIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 		                2,
 		                JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,pin_tiles.contains(item),x.getProperty("p_id"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("petition_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("p_title"),x.getProperty("p_title_id"),x.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(x)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0),x.getRelationships("Belongs_To_Subcategory_Petition").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Comment_To_Petition").asScala.size,x.getProperty("p_img_url").toString(),x.getProperty("p_content").toString(),x.getProperty("time_created").toString(),"","",false,x.getProperty("p_target").toString().toInt - x.getProperty("p_count").toString().toInt,
@@ -3114,6 +3147,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = TownhallIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
 		                3,
 		                JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,true,pin_tiles.contains(item),x.getProperty("t_id"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("townhall_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("t_title"),x.getProperty("t_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Townhall").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Townhall").asScala.size,x.getProperty("t_img_url").toString(),x.getProperty("t_content").toString(),x.getProperty("time_created").toString(),
@@ -3132,6 +3166,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = DebateIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
 		                4,
 		                JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,true,pin_tiles.contains(item),x.getProperty("d_id"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("first_name").toString()+ " " + x.getSingleRelationship("Debate_Written_By",Direction.OUTGOING).getEndNode().getProperty("last_name").toString(),x.getRelationships("debate_readlater").asScala.map(_.getOtherNode(x)).toList.contains(user_node),x.getProperty("d_title"),x.getProperty("d_title_id"),"",x.getRelationships("Belongs_To_Subcategory_Debate").asScala.toList.filter(x => x.hasProperty("main")).map(_.getOtherNode(x).getProperty("name").toString()).slice(0,1).mkString(","),x.getRelationships("Commented_On_Debate").asScala.size,x.getProperty("d_img_url").toString(),x.getProperty("d_content").toString(),x.getProperty("time_created").toString(),
@@ -3190,6 +3225,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 			          {
 			            
 			            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 			                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 			                0,
 			                JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),
@@ -3224,6 +3260,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 			          {
 			            
 			            out :+= JSONObject(a_list.zip(List(
+		                x.getProperty("event_date_time_closing").toString(),	//P_EventEndTime 
 			                x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,1,JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Event").asScala.size,
 			                true,
 			                false,
@@ -3255,6 +3292,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 			            
 			            
 			            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 			                x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,2,JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,
 			                true,
 			                false,
@@ -3283,6 +3321,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 			          else if(x.getProperty("__CLASS__").toString.equals("Saddahaq.townhall"))
 			          {
 			            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 			                x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,3,JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Question").asScala.toList.size-x.getRelationships("Asked_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Townhall").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Townhall").asScala.size,
 			                true,
 			                false,
@@ -3312,6 +3351,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 			          else
 			          {
 			            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 			                x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,4,JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Commented_On_Debate").asScala.size,
 			                true,
 			                false,
@@ -3356,6 +3396,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = ArticleIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,0,JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Article").asScala.size,
 		                true,
 		                pin_tiles.contains(item),
@@ -3386,6 +3427,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = EventIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                x.getProperty("event_date_time_closing").toString(),	//P_EventEndTime 
 		                x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 		                1,
 		                JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Is_Attending").asScala.toList.size-x.getRelationships("Is_Attending").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Event").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),
@@ -3419,6 +3461,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = PetitionIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,2,JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Signed_Petition").asScala.toList.size-x.getRelationships("Signed_Petition").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Comment_To_Petition").asScala.size,true,pin_tiles.contains(item),
 		                x.getProperty("p_id"),
 		                x.getSingleRelationship("Petition_Written_By",Direction.OUTGOING).getEndNode().getProperty("user_name"),
@@ -3446,6 +3489,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = TownhallIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
 		                3,
 		                JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  
@@ -3475,6 +3519,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = DebateIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,4,JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("Asked_Debate_Question").asScala.toList.size-x.getRelationships("Asked_Debate_Question").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Commented_On_Debate").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x)).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),
 		                x.getRelationships("Commented_On_Debate").asScala.size,
 		                true,
@@ -3608,6 +3653,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = ArticleIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Comment_To_Article").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,0,JSONArray(x.getRelationships("article_voteup").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  x.getRelationships("article_voteup").asScala.toList.size-x.getRelationships("article_voteup").asScala.toList.slice(0,2).size,  JSONArray(x.getRelationships("Comment_To_Article").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.slice(0,2).map(z=>JSONObject(l2.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))), 
 		                x.getRelationships("Comment_To_Article").asScala.size,
 		                true,
@@ -3639,6 +3685,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = EventIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                x.getProperty("event_date_time_closing").toString(),	//P_EventEndTime 
 		                x.getRelationships("Comment_To_Event").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 		                1,
 		                JSONArray(x.getRelationships("Is_Attending").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))), 
@@ -3674,6 +3721,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = PetitionIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Comment_To_Petition").asScala.toList.map(y=>y.getOtherNode(x).getSingleRelationship("Comment_Written_By",Direction.OUTGOING).getEndNode()).distinct.size,
 		                2,
 		                JSONArray(x.getRelationships("Signed_Petition").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))), 
@@ -3708,6 +3756,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = TownhallIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Commented_On_Townhall").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
 		                3,
 		                JSONArray(x.getRelationships("Asked_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),
@@ -3743,6 +3792,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		          {
 		            val x = DebateIndex.get("id",item).getSingle()
 		            out :+= JSONObject(a_list.zip(List(
+		                "",	//P_EventEndTime
 		                x.getRelationships("Commented_On_Debate").asScala.toList.map(y=>y.getOtherNode(x)).distinct.size,
 		                4,
 		                JSONArray(x.getRelationships("Asked_Debate_Question").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,2).map(y=>y.getOtherNode(x)).map(z=>JSONObject(l3.zip(List((z.getProperty("first_name").toString()+" "+z.getProperty("last_name").toString()),z.getProperty("user_name").toString())).toMap))),  
@@ -7864,14 +7914,24 @@ def get_trends(cat: String):String =
     }
   }
   
-  def get_user_spaces(user_name: String, relation_type: String):String = {
+  /*get spaces:
+  @author: Kalyan Kumar Komati
+  @param: user_name , unique user name of the user
+  @param: relation_type, type of spaces that user wants to retrieve
+  				f -> user following spaces
+  				c -> spaces created by user
+  				s -> all closed and open spaces, irrespective of user relation with space
+  				sc -> all closed spaces, irrespective of user relation with space
+  				so -> all closed spaces, irrespective of user relation with space
+  */
+  def get_spaces(user_name: String, relation_type: String):String = {
     
     withTx {
       implicit neo =>
         var ret = ""        
         var spaceIndex = getNodeIndex("space").get
         var allSpaces = spaceIndex.query( "id", "*" ).iterator().asScala.toList
-        var relatedSpaces = List[Any]()
+        var requestedSpaces = List[Any]()
         
         var userIndex = getNodeIndex("user").get
         var userNode = userIndex.get("id",user_name).getSingle();
@@ -7880,17 +7940,22 @@ def get_trends(cat: String):String =
         val l3 = List("Name","UName")
         
         //val l1 = List("space_id","space_title_id","space_title","space_tagline","space_fut_image","space_time_created","is_closed")
-        var user_related_spaces = List[org.neo4j.graphdb.Node]()
+        var user_requested_spaces = List[org.neo4j.graphdb.Node]()
         if(userNode != null)
         {
           if(relation_type.equalsIgnoreCase("f"))
-        	  user_related_spaces = userNode.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
+        	  user_requested_spaces = userNode.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
           else if(relation_type.equalsIgnoreCase("c"))
-        	  user_related_spaces = userNode.getRelationships("Space_Created_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
-          
+        	  user_requested_spaces = userNode.getRelationships("Space_Created_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
+          else if(relation_type.equalsIgnoreCase("s"))
+              user_requested_spaces = allSpaces
+          else if(relation_type.equalsIgnoreCase("sc"))
+              user_requested_spaces = allSpaces.filter( x => x.getProperty("closed").toString().toInt == 1)
+          else if(relation_type.equalsIgnoreCase("so"))
+              user_requested_spaces = allSpaces.filter( x => x.getProperty("closed").toString().toInt == 0)
           
           /*for(eachSpace <- user_related_spaces)
-          relatedSpaces :+= JSONObject(
+          requestedSpaces :+= JSONObject(
         		  					    l1.zip(
         		  					        List(
         		  					            eachSpace.getProperty("space_id").toString(),
@@ -7905,8 +7970,8 @@ def get_trends(cat: String):String =
         		  					            ) */
         
         	  
-        //for(eachSpace <- user_related_spaces)
-          relatedSpaces = user_related_spaces.map(eachSpace => JSONObject(
+        //for(eachSpace <- user_requested_spaces)
+          requestedSpaces = user_requested_spaces.map(eachSpace => JSONObject(
         		  					    a_list.zip(
         		  					        List(
         		  					            0, //Comment_Count
@@ -7941,7 +8006,7 @@ def get_trends(cat: String):String =
         		  					            ))
         }
         
-	    ret = JSONArray(relatedSpaces).toString()
+	    ret = JSONArray(requestedSpaces).toString()
                 
 	    ret 
     }

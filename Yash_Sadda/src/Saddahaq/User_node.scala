@@ -7977,7 +7977,7 @@ println("Jar Ok")
   
   def main(): Unit = {
     //jar_check()
-    insert_dummy_data()
+    //insert_dummy_data()
     
 		  try
         {
@@ -8126,7 +8126,90 @@ println("Jar Ok")
     System.out.println(16 + get_articles_space("user98","sk3",4,0,2))
     System.out.println(17 + get_articles_space("user98","sk4",4,0,0))
     System.out.println(18 + get_articles_space("user98","sk4",4,0,1))
-    System.out.println(19 + get_articles_space("user98","sk4",4,0,2))*/
+    System.out.println(19 + get_articles_space("user98","sk4",4,0,2))
+    
+    System.out.println(create_event("user98", "event1_user98", "event_title_id_1", "event title 1", "event content", t , t+t, 0, "hyderabad", "sports", "sport_event", "sport_event_refer_tag","",t-10000, "","event_summery", 0, "event fut image", 0));
+    System.out.println(create_event("user98", "event2_user98", "event_title_id_2", "event title 2", "event content", t , t+t, 0, "hyderabad", "sports", "sport_event", "sport_event_refer_tag","",t-10000, "","event_summery", 0, "event fut image", 0));
+    
+    System.out.println("\n\n empty \n\n" + get_tiles("user98", "all", 100, 0, "", ""));
+    System.out.println("\n\n f \n\n" + get_tiles("user98", "all", 100, 0, "", "f"));
+    System.out.println("\n\n h \n\n" + get_tiles("user98", "all", 100, 0, "", "h"));
+    System.out.println("\n\n up \n\n" + get_tiles("user98", "all", 100, 0, "user98", "up"));
+    System.out.println("\n\n l \n\n" + get_tiles("user98", "all", 100, 0, "", "l")); */
+    /*
+    System.out.println("User 98, 99, 100 created spaces");
+    System.out.println(get_spaces("user98","c"));
+    System.out.println(get_spaces("user99","c"));
+    System.out.println(get_spaces("user100","c"));
+    
+    
+    System.out.println("User 98, 99, 100 following spaces");
+    System.out.println(get_spaces("user98","f"));
+    System.out.println(get_spaces("user99","f"));
+    System.out.println(get_spaces("user100","f"));
+    
+    
+    System.out.println("User all spaces");
+    System.out.println(get_spaces("user98","s"));
+    System.out.println(get_spaces("user99","s"));
+    System.out.println(get_spaces("user100","s"));
+    
+    
+    System.out.println("User all open spaces");
+    System.out.println(get_spaces("user98","so"));
+    System.out.println(get_spaces("user99","so"));
+    System.out.println(get_spaces("user100","so"));
+    
+    System.out.println("User all closed spaces");
+    System.out.println(get_spaces("user98","sc"));
+    System.out.println(get_spaces("user99","sc"));
+    System.out.println(get_spaces("user100","sc"));
+    
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user95", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user95", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user95", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user95", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user95", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user95", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user95", t)) 
+    
+    
+    
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User attending event1_user98" + event_response("event1_user98", "user100", t))
+    System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user100", t)) */
+    
   }
 
 }

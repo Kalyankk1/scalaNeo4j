@@ -57,7 +57,7 @@ public class User_nodeService {
 
     public boolean space_isclosed(String id, int is_closed) throws org.apache.thrift.TException;
 
-    public String get_user_spaces(String user_name, String relation_type) throws org.apache.thrift.TException;
+    public String get_spaces(String user_name, String relation_type) throws org.apache.thrift.TException;
 
     public boolean user_unfollow(String user_name1, String user_name2) throws org.apache.thrift.TException;
 
@@ -277,7 +277,7 @@ public class User_nodeService {
 
     public void space_isclosed(String id, int is_closed, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.space_isclosed_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void get_user_spaces(String user_name, String relation_type, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.get_user_spaces_call> resultHandler) throws org.apache.thrift.TException;
+    public void get_spaces(String user_name, String relation_type, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.get_spaces_call> resultHandler) throws org.apache.thrift.TException;
 
     public void user_unfollow(String user_name1, String user_name2, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.user_unfollow_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -819,28 +819,28 @@ public class User_nodeService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "space_isclosed failed: unknown result");
     }
 
-    public String get_user_spaces(String user_name, String relation_type) throws org.apache.thrift.TException
+    public String get_spaces(String user_name, String relation_type) throws org.apache.thrift.TException
     {
-      send_get_user_spaces(user_name, relation_type);
-      return recv_get_user_spaces();
+      send_get_spaces(user_name, relation_type);
+      return recv_get_spaces();
     }
 
-    public void send_get_user_spaces(String user_name, String relation_type) throws org.apache.thrift.TException
+    public void send_get_spaces(String user_name, String relation_type) throws org.apache.thrift.TException
     {
-      get_user_spaces_args args = new get_user_spaces_args();
+      get_spaces_args args = new get_spaces_args();
       args.setUser_name(user_name);
       args.setRelation_type(relation_type);
-      sendBase("get_user_spaces", args);
+      sendBase("get_spaces", args);
     }
 
-    public String recv_get_user_spaces() throws org.apache.thrift.TException
+    public String recv_get_spaces() throws org.apache.thrift.TException
     {
-      get_user_spaces_result result = new get_user_spaces_result();
-      receiveBase(result, "get_user_spaces");
+      get_spaces_result result = new get_spaces_result();
+      receiveBase(result, "get_spaces");
       if (result.isSetSuccess()) {
         return result.success;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "get_user_spaces failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "get_spaces failed: unknown result");
     }
 
     public boolean user_unfollow(String user_name1, String user_name2) throws org.apache.thrift.TException
@@ -3792,25 +3792,25 @@ public class User_nodeService {
       }
     }
 
-    public void get_user_spaces(String user_name, String relation_type, org.apache.thrift.async.AsyncMethodCallback<get_user_spaces_call> resultHandler) throws org.apache.thrift.TException {
+    public void get_spaces(String user_name, String relation_type, org.apache.thrift.async.AsyncMethodCallback<get_spaces_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      get_user_spaces_call method_call = new get_user_spaces_call(user_name, relation_type, resultHandler, this, ___protocolFactory, ___transport);
+      get_spaces_call method_call = new get_spaces_call(user_name, relation_type, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class get_user_spaces_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class get_spaces_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String user_name;
       private String relation_type;
-      public get_user_spaces_call(String user_name, String relation_type, org.apache.thrift.async.AsyncMethodCallback<get_user_spaces_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public get_spaces_call(String user_name, String relation_type, org.apache.thrift.async.AsyncMethodCallback<get_spaces_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.user_name = user_name;
         this.relation_type = relation_type;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("get_user_spaces", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        get_user_spaces_args args = new get_user_spaces_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("get_spaces", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        get_spaces_args args = new get_spaces_args();
         args.setUser_name(user_name);
         args.setRelation_type(relation_type);
         args.write(prot);
@@ -3823,7 +3823,7 @@ public class User_nodeService {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_get_user_spaces();
+        return (new Client(prot)).recv_get_spaces();
       }
     }
 
@@ -7659,7 +7659,7 @@ public class User_nodeService {
       processMap.put("space_follow", new space_follow());
       processMap.put("space_tagitem", new space_tagitem());
       processMap.put("space_isclosed", new space_isclosed());
-      processMap.put("get_user_spaces", new get_user_spaces());
+      processMap.put("get_spaces", new get_spaces());
       processMap.put("user_unfollow", new user_unfollow());
       processMap.put("voteup_markfav_readlater", new voteup_markfav_readlater());
       processMap.put("votedown", new votedown());
@@ -7975,18 +7975,18 @@ public class User_nodeService {
       }
     }
 
-    private static class get_user_spaces<I extends Iface> extends org.apache.thrift.ProcessFunction<I, get_user_spaces_args> {
-      public get_user_spaces() {
-        super("get_user_spaces");
+    private static class get_spaces<I extends Iface> extends org.apache.thrift.ProcessFunction<I, get_spaces_args> {
+      public get_spaces() {
+        super("get_spaces");
       }
 
-      protected get_user_spaces_args getEmptyArgsInstance() {
-        return new get_user_spaces_args();
+      protected get_spaces_args getEmptyArgsInstance() {
+        return new get_spaces_args();
       }
 
-      protected get_user_spaces_result getResult(I iface, get_user_spaces_args args) throws org.apache.thrift.TException {
-        get_user_spaces_result result = new get_user_spaces_result();
-        result.success = iface.get_user_spaces(args.user_name, args.relation_type);
+      protected get_spaces_result getResult(I iface, get_spaces_args args) throws org.apache.thrift.TException {
+        get_spaces_result result = new get_spaces_result();
+        result.success = iface.get_spaces(args.user_name, args.relation_type);
         return result;
       }
     }
@@ -21762,16 +21762,16 @@ public class User_nodeService {
 
   }
 
-  public static class get_user_spaces_args implements org.apache.thrift.TBase<get_user_spaces_args, get_user_spaces_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("get_user_spaces_args");
+  public static class get_spaces_args implements org.apache.thrift.TBase<get_spaces_args, get_spaces_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("get_spaces_args");
 
     private static final org.apache.thrift.protocol.TField USER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("user_name", org.apache.thrift.protocol.TType.STRING, (short)1);
     private static final org.apache.thrift.protocol.TField RELATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("relation_type", org.apache.thrift.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new get_user_spaces_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new get_user_spaces_argsTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new get_spaces_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new get_spaces_argsTupleSchemeFactory());
     }
 
     public String user_name; // required
@@ -21847,13 +21847,13 @@ public class User_nodeService {
       tmpMap.put(_Fields.RELATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("relation_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_user_spaces_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_spaces_args.class, metaDataMap);
     }
 
-    public get_user_spaces_args() {
+    public get_spaces_args() {
     }
 
-    public get_user_spaces_args(
+    public get_spaces_args(
       String user_name,
       String relation_type)
     {
@@ -21865,7 +21865,7 @@ public class User_nodeService {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public get_user_spaces_args(get_user_spaces_args other) {
+    public get_spaces_args(get_spaces_args other) {
       if (other.isSetUser_name()) {
         this.user_name = other.user_name;
       }
@@ -21874,8 +21874,8 @@ public class User_nodeService {
       }
     }
 
-    public get_user_spaces_args deepCopy() {
-      return new get_user_spaces_args(this);
+    public get_spaces_args deepCopy() {
+      return new get_spaces_args(this);
     }
 
     @Override
@@ -21888,7 +21888,7 @@ public class User_nodeService {
       return this.user_name;
     }
 
-    public get_user_spaces_args setUser_name(String user_name) {
+    public get_spaces_args setUser_name(String user_name) {
       this.user_name = user_name;
       return this;
     }
@@ -21912,7 +21912,7 @@ public class User_nodeService {
       return this.relation_type;
     }
 
-    public get_user_spaces_args setRelation_type(String relation_type) {
+    public get_spaces_args setRelation_type(String relation_type) {
       this.relation_type = relation_type;
       return this;
     }
@@ -21984,12 +21984,12 @@ public class User_nodeService {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof get_user_spaces_args)
-        return this.equals((get_user_spaces_args)that);
+      if (that instanceof get_spaces_args)
+        return this.equals((get_spaces_args)that);
       return false;
     }
 
-    public boolean equals(get_user_spaces_args that) {
+    public boolean equals(get_spaces_args that) {
       if (that == null)
         return false;
 
@@ -22019,13 +22019,13 @@ public class User_nodeService {
       return 0;
     }
 
-    public int compareTo(get_user_spaces_args other) {
+    public int compareTo(get_spaces_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      get_user_spaces_args typedOther = (get_user_spaces_args)other;
+      get_spaces_args typedOther = (get_spaces_args)other;
 
       lastComparison = Boolean.valueOf(isSetUser_name()).compareTo(typedOther.isSetUser_name());
       if (lastComparison != 0) {
@@ -22064,7 +22064,7 @@ public class User_nodeService {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("get_user_spaces_args(");
+      StringBuilder sb = new StringBuilder("get_spaces_args(");
       boolean first = true;
 
       sb.append("user_name:");
@@ -22106,15 +22106,15 @@ public class User_nodeService {
       }
     }
 
-    private static class get_user_spaces_argsStandardSchemeFactory implements SchemeFactory {
-      public get_user_spaces_argsStandardScheme getScheme() {
-        return new get_user_spaces_argsStandardScheme();
+    private static class get_spaces_argsStandardSchemeFactory implements SchemeFactory {
+      public get_spaces_argsStandardScheme getScheme() {
+        return new get_spaces_argsStandardScheme();
       }
     }
 
-    private static class get_user_spaces_argsStandardScheme extends StandardScheme<get_user_spaces_args> {
+    private static class get_spaces_argsStandardScheme extends StandardScheme<get_spaces_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, get_user_spaces_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, get_spaces_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -22151,7 +22151,7 @@ public class User_nodeService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, get_user_spaces_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, get_spaces_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -22171,16 +22171,16 @@ public class User_nodeService {
 
     }
 
-    private static class get_user_spaces_argsTupleSchemeFactory implements SchemeFactory {
-      public get_user_spaces_argsTupleScheme getScheme() {
-        return new get_user_spaces_argsTupleScheme();
+    private static class get_spaces_argsTupleSchemeFactory implements SchemeFactory {
+      public get_spaces_argsTupleScheme getScheme() {
+        return new get_spaces_argsTupleScheme();
       }
     }
 
-    private static class get_user_spaces_argsTupleScheme extends TupleScheme<get_user_spaces_args> {
+    private static class get_spaces_argsTupleScheme extends TupleScheme<get_spaces_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, get_user_spaces_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, get_spaces_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
         if (struct.isSetUser_name()) {
@@ -22199,7 +22199,7 @@ public class User_nodeService {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, get_user_spaces_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, get_spaces_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
@@ -22215,15 +22215,15 @@ public class User_nodeService {
 
   }
 
-  public static class get_user_spaces_result implements org.apache.thrift.TBase<get_user_spaces_result, get_user_spaces_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("get_user_spaces_result");
+  public static class get_spaces_result implements org.apache.thrift.TBase<get_spaces_result, get_spaces_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("get_spaces_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRING, (short)0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new get_user_spaces_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new get_user_spaces_resultTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new get_spaces_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new get_spaces_resultTupleSchemeFactory());
     }
 
     public String success; // required
@@ -22293,13 +22293,13 @@ public class User_nodeService {
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_user_spaces_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_spaces_result.class, metaDataMap);
     }
 
-    public get_user_spaces_result() {
+    public get_spaces_result() {
     }
 
-    public get_user_spaces_result(
+    public get_spaces_result(
       String success)
     {
       this();
@@ -22309,14 +22309,14 @@ public class User_nodeService {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public get_user_spaces_result(get_user_spaces_result other) {
+    public get_spaces_result(get_spaces_result other) {
       if (other.isSetSuccess()) {
         this.success = other.success;
       }
     }
 
-    public get_user_spaces_result deepCopy() {
-      return new get_user_spaces_result(this);
+    public get_spaces_result deepCopy() {
+      return new get_spaces_result(this);
     }
 
     @Override
@@ -22328,7 +22328,7 @@ public class User_nodeService {
       return this.success;
     }
 
-    public get_user_spaces_result setSuccess(String success) {
+    public get_spaces_result setSuccess(String success) {
       this.success = success;
       return this;
     }
@@ -22387,12 +22387,12 @@ public class User_nodeService {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof get_user_spaces_result)
-        return this.equals((get_user_spaces_result)that);
+      if (that instanceof get_spaces_result)
+        return this.equals((get_spaces_result)that);
       return false;
     }
 
-    public boolean equals(get_user_spaces_result that) {
+    public boolean equals(get_spaces_result that) {
       if (that == null)
         return false;
 
@@ -22413,13 +22413,13 @@ public class User_nodeService {
       return 0;
     }
 
-    public int compareTo(get_user_spaces_result other) {
+    public int compareTo(get_spaces_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      get_user_spaces_result typedOther = (get_user_spaces_result)other;
+      get_spaces_result typedOther = (get_spaces_result)other;
 
       lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
@@ -22448,7 +22448,7 @@ public class User_nodeService {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("get_user_spaces_result(");
+      StringBuilder sb = new StringBuilder("get_spaces_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -22482,15 +22482,15 @@ public class User_nodeService {
       }
     }
 
-    private static class get_user_spaces_resultStandardSchemeFactory implements SchemeFactory {
-      public get_user_spaces_resultStandardScheme getScheme() {
-        return new get_user_spaces_resultStandardScheme();
+    private static class get_spaces_resultStandardSchemeFactory implements SchemeFactory {
+      public get_spaces_resultStandardScheme getScheme() {
+        return new get_spaces_resultStandardScheme();
       }
     }
 
-    private static class get_user_spaces_resultStandardScheme extends StandardScheme<get_user_spaces_result> {
+    private static class get_spaces_resultStandardScheme extends StandardScheme<get_spaces_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, get_user_spaces_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, get_spaces_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -22519,7 +22519,7 @@ public class User_nodeService {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, get_user_spaces_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, get_spaces_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -22534,16 +22534,16 @@ public class User_nodeService {
 
     }
 
-    private static class get_user_spaces_resultTupleSchemeFactory implements SchemeFactory {
-      public get_user_spaces_resultTupleScheme getScheme() {
-        return new get_user_spaces_resultTupleScheme();
+    private static class get_spaces_resultTupleSchemeFactory implements SchemeFactory {
+      public get_spaces_resultTupleScheme getScheme() {
+        return new get_spaces_resultTupleScheme();
       }
     }
 
-    private static class get_user_spaces_resultTupleScheme extends TupleScheme<get_user_spaces_result> {
+    private static class get_spaces_resultTupleScheme extends TupleScheme<get_spaces_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, get_user_spaces_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, get_spaces_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
         if (struct.isSetSuccess()) {
@@ -22556,7 +22556,7 @@ public class User_nodeService {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, get_user_spaces_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, get_spaces_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {

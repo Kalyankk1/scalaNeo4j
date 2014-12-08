@@ -1437,7 +1437,8 @@ def edit_event(user_name: String,
   
  
 
-  // This function is trigged when a user responds to an event( Only YES) and also when a user changes his responce from No to YES
+  // This function is trigged when a user responds to an event( YES / NO) 
+  // This function toggles the response from No to YES / YES to NO
   def event_response(
       id:String, // event id
       user_name:String,  // unique user name
@@ -1460,40 +1461,77 @@ def edit_event(user_name: String,
      if(user_node != null && event_node != null)
 	 {
          user_node.setProperty("last_seen",time)
-	     val u_wt = user_node.getProperty("weight").toString().toInt
-	     // getting hash nodes related to the event
-	     val hash_nodes = event_node.getRelationships("Belongs_To_Subcategory_Event",Direction.OUTGOING).asScala.map(_.getOtherNode(event_node)).toList
-	       
-	     // creating relation between event and user
-	     val rel_id = id+user_name+"Is_Attending"  
-	     val Relation_Index = getRelationIndex("event_response").get
-	     val rel: org.neo4j.graphdb.Relationship = user_node --> "Is_Attending" --> event_node <
-	     val rel_time = rel.setProperty("time", time)
-	     // increasing the weights of user, author, event and hash nodes
-	     var rel_in_wt = rel.setProperty("in_weight", Math.round(u_wt.asInstanceOf[Float]/200))
-	     var rel_out_wt = rel.setProperty("out_weight", 5)
-	     Relation_Index += (rel,"rel_id",rel_id)
-	     val e_wt = event_node.getProperty("weight").toString().toInt
-	     event_node.setProperty("weight",e_wt+(Math.round(u_wt.asInstanceOf[Float]/200)))
-	     event_weight_index.remove(event_node)
-	     event_weight_index += (event_node,"weight",new ValueContext( e_wt+(Math.round(u_wt.asInstanceOf[Float]/200)) ).indexNumeric())
-	     
-	     user_node.setProperty("weight",u_wt+5)
-	     user_weight_index.remove(user_node)
-	     user_weight_index += (user_node,"weight",new ValueContext( u_wt+5 ).indexNumeric())
-	     val author_node = event_node.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getOtherNode(event_node)
-	     val au_wt = author_node.getProperty("weight").toString().toInt
-	     author_node.setProperty("weight",au_wt+(Math.round(u_wt.asInstanceOf[Float]/200)))
-	     user_weight_index.remove(author_node)
-	     user_weight_index += (author_node,"weight",new ValueContext( au_wt+(Math.round(u_wt.asInstanceOf[Float]/200))).indexNumeric())
-	     for(each <- hash_nodes)
-	     {
-	         val h_wt = each.getProperty("weight").toString().toInt
-		     each.setProperty("weight",h_wt + (Math.round(u_wt.asInstanceOf[Float]/200)))
-		     hash_weight_index.remove(each)
-			 hash_weight_index += (each,"weight",new ValueContext( h_wt + (Math.round(u_wt.asInstanceOf[Float]/200)) ).indexNumeric())
-	     }
-		 ret = true
+         
+		 val u_wt = user_node.getProperty("weight").toString().toInt
+		 
+		 // getting hash nodes related to the event
+		 val hash_nodes = event_node.getRelationships("Belongs_To_Subcategory_Event",Direction.OUTGOING).asScala.map(_.getOtherNode(event_node)).toList
+		       
+		 // unique id for the relation
+		 val rel_id = id+user_name+"Is_Attending"  
+		 val Relation_Index = getRelationIndex("event_response").get
+         
+         //If user is not attending the event, mark the user as attending by creating relationship
+		 if(Relation_Index.get("rel_id",rel_id).getSingle() == null)
+         {
+		     val rel: org.neo4j.graphdb.Relationship = user_node --> "Is_Attending" --> event_node <
+		     val rel_time = rel.setProperty("time", time)
+		     // increasing the weights of user, author, event and hash nodes
+		     var rel_in_wt = rel.setProperty("in_weight", Math.round(u_wt.asInstanceOf[Float]/200))
+		     var rel_out_wt = rel.setProperty("out_weight", 5)
+		     Relation_Index += (rel,"rel_id",rel_id)
+		     val e_wt = event_node.getProperty("weight").toString().toInt
+		     event_node.setProperty("weight",e_wt+(Math.round(u_wt.asInstanceOf[Float]/200)))
+		     event_weight_index.remove(event_node)
+		     event_weight_index += (event_node,"weight",new ValueContext( e_wt+(Math.round(u_wt.asInstanceOf[Float]/200)) ).indexNumeric())
+		     
+		     user_node.setProperty("weight",u_wt+5)
+		     user_weight_index.remove(user_node)
+		     user_weight_index += (user_node,"weight",new ValueContext( u_wt+5 ).indexNumeric())
+		     val author_node = event_node.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getOtherNode(event_node)
+		     val au_wt = author_node.getProperty("weight").toString().toInt
+		     author_node.setProperty("weight",au_wt+(Math.round(u_wt.asInstanceOf[Float]/200)))
+		     user_weight_index.remove(author_node)
+		     user_weight_index += (author_node,"weight",new ValueContext( au_wt+(Math.round(u_wt.asInstanceOf[Float]/200))).indexNumeric())
+		     for(each <- hash_nodes)
+		     {
+		         val h_wt = each.getProperty("weight").toString().toInt
+			     each.setProperty("weight",h_wt + (Math.round(u_wt.asInstanceOf[Float]/200)))
+			     hash_weight_index.remove(each)
+				 hash_weight_index += (each,"weight",new ValueContext( h_wt + (Math.round(u_wt.asInstanceOf[Float]/200)) ).indexNumeric())
+		     }
+			 ret = true
+			 
+         }
+         else{
+           //If user is already attending the event, remove the relation and revert back the assigned weights
+        	 val relation = Relation_Index.get("rel_id",rel_id).getSingle()
+		     val r_wt = relation.getProperty("in_weight").toString().toInt
+		     
+			 val e_wt = event_node.getProperty("weight").toString().toInt
+			 val author_node = event_node.getSingleRelationship("Event_Created_By",Direction.OUTGOING).getOtherNode(event_node)
+		     val au_wt = author_node.getProperty("weight").toString().toInt
+		     event_node.setProperty("weight",e_wt-r_wt)
+		     author_node.setProperty("weight",au_wt-r_wt)
+		     user_node.setProperty("weight",u_wt-5)
+		     Relation_Index.remove(relation)
+		     relation.delete()
+		     
+		     event_weight_index.remove(event_node)
+		     event_weight_index += (event_node,"weight",new ValueContext( e_wt-r_wt ).indexNumeric())
+		     user_weight_index.remove(author_node)
+		     user_weight_index += (author_node,"weight",new ValueContext( au_wt-r_wt).indexNumeric())
+		     user_weight_index.remove(user_node)
+		     user_weight_index += (user_node,"weight",new ValueContext( u_wt-5).indexNumeric())
+		     for(each <- hash_nodes)
+		     {
+		         val h_wt = each.getProperty("weight").toString().toInt
+			     each.setProperty("weight",h_wt-r_wt)
+			     hash_weight_index.remove(each)
+				 hash_weight_index += (each,"weight",new ValueContext( h_wt-r_wt ).indexNumeric())
+		     }
+		     ret = true 
+         }
      }
      ret
     }
@@ -1581,6 +1619,8 @@ def edit_event(user_name: String,
   }
   
   // This function is trigged when a user changes his response to an event ( Only form Yes To No)
+  //Removed this function as event_response() is going to serve as toggle function of attending event
+  //From 8th Dec 2014 this method will do nothing, and returns false (i.e., commented the business login written in if block)
   def event_changeresponse(
       id:String,  // event id
       user_name:String,  // unique user name
@@ -1600,7 +1640,8 @@ def edit_event(user_name: String,
      val hash_weight_index = getNodeIndex("hash_weight").get
      val Relation_Index = getRelationIndex("event_response").get
      var ret = false
-     if(user_node != null && event_node != null)
+     
+     /*if(user_node != null && event_node != null)
 	 {
        
          user_node.setProperty("last_seen",time)
@@ -1633,10 +1674,11 @@ def edit_event(user_name: String,
 			 hash_weight_index += (each,"weight",new ValueContext( h_wt-r_wt ).indexNumeric())
 	     }
 	     ret = true
-     }
+     } */
      ret
-    }
-  }
+    } 
+    
+  } 
   
   // This function gives first 3 events belonging to a category
     def get_events_category(
