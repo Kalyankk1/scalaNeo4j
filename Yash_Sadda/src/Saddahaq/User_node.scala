@@ -8136,34 +8136,39 @@ println("Jar Ok")
     System.out.println("\n\n h \n\n" + get_tiles("user98", "all", 100, 0, "", "h"));
     System.out.println("\n\n up \n\n" + get_tiles("user98", "all", 100, 0, "user98", "up"));
     System.out.println("\n\n l \n\n" + get_tiles("user98", "all", 100, 0, "", "l")); */
-    /*
+    
     System.out.println("User 98, 99, 100 created spaces");
     System.out.println(get_spaces("user98","c"));
     System.out.println(get_spaces("user99","c"));
     System.out.println(get_spaces("user100","c"));
+    System.out.println(get_spaces("","c"));
     
     
     System.out.println("User 98, 99, 100 following spaces");
     System.out.println(get_spaces("user98","f"));
     System.out.println(get_spaces("user99","f"));
     System.out.println(get_spaces("user100","f"));
+    System.out.println(get_spaces("","f"));
     
     
     System.out.println("User all spaces");
     System.out.println(get_spaces("user98","s"));
     System.out.println(get_spaces("user99","s"));
     System.out.println(get_spaces("user100","s"));
+    System.out.println(get_spaces("","s"));
     
     
     System.out.println("User all open spaces");
     System.out.println(get_spaces("user98","so"));
     System.out.println(get_spaces("user99","so"));
     System.out.println(get_spaces("user100","so"));
+    System.out.println(get_spaces("","so"));
     
     System.out.println("User all closed spaces");
     System.out.println(get_spaces("user98","sc"));
     System.out.println(get_spaces("user99","sc"));
     System.out.println(get_spaces("user100","sc"));
+    System.out.println(get_spaces("","sc"));/*
     
     System.out.println("User attending event1_user98" + event_response("event1_user98", "user95", t))
     System.out.println("User Not attending event1_user98" + event_response("event1_user98", "user95", t))

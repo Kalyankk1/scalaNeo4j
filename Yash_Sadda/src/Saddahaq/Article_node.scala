@@ -7916,7 +7916,7 @@ def get_trends(cat: String):String =
   
   /*get spaces:
   @author: Kalyan Kumar Komati
-  @param: user_name , unique user name of the user
+  @param: user_name , unique user name of the user, user_name can be empty if and only if request/relation type is "so" - open spaces
   @param: relation_type, type of spaces that user wants to retrieve
   				f -> user following spaces
   				c -> spaces created by user
@@ -7941,15 +7941,14 @@ def get_trends(cat: String):String =
         
         //val l1 = List("space_id","space_title_id","space_title","space_tagline","space_fut_image","space_time_created","is_closed")
         var user_requested_spaces = List[org.neo4j.graphdb.Node]()
-        if(userNode != null)
-        {
-          if(relation_type.equalsIgnoreCase("f"))
+        
+          if(userNode != null && relation_type.equalsIgnoreCase("f"))
         	  user_requested_spaces = userNode.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
-          else if(relation_type.equalsIgnoreCase("c"))
+          else if(userNode != null && relation_type.equalsIgnoreCase("c"))
         	  user_requested_spaces = userNode.getRelationships("Space_Created_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
-          else if(relation_type.equalsIgnoreCase("s"))
+          else if( userNode != null && relation_type.equalsIgnoreCase("s"))
               user_requested_spaces = allSpaces
-          else if(relation_type.equalsIgnoreCase("sc"))
+          else if(userNode != null && relation_type.equalsIgnoreCase("sc"))
               user_requested_spaces = allSpaces.filter( x => x.getProperty("closed").toString().toInt == 1)
           else if(relation_type.equalsIgnoreCase("so"))
               user_requested_spaces = allSpaces.filter( x => x.getProperty("closed").toString().toInt == 0)
@@ -8004,7 +8003,6 @@ def get_trends(cat: String):String =
         		  					            )
         		  					            ).toMap
         		  					            ))
-        }
         
 	    ret = JSONArray(requestedSpaces).toString()
                 
