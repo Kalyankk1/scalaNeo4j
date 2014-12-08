@@ -7923,8 +7923,15 @@ def get_trends(cat: String):String =
   				s -> all closed and open spaces, irrespective of user relation with space
   				sc -> all closed spaces, irrespective of user relation with space
   				so -> all closed spaces, irrespective of user relation with space
+  @param: count, number of space items to be returned
+  @param: prev_cnt, number of space items already read
   */
-  def get_spaces(user_name: String, relation_type: String):String = {
+  def get_spaces(
+		  user_name: String,
+		  relation_type: String,
+		  count: Int,
+		  prev_cnt: Int
+		  ):String = {
     
     withTx {
       implicit neo =>
@@ -7943,15 +7950,15 @@ def get_trends(cat: String):String =
         var user_requested_spaces = List[org.neo4j.graphdb.Node]()
         
           if(userNode != null && relation_type.equalsIgnoreCase("f"))
-        	  user_requested_spaces = userNode.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
+        	  user_requested_spaces = userNode.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList.slice(prev_cnt,(prev_cnt+count))
           else if(userNode != null && relation_type.equalsIgnoreCase("c"))
-        	  user_requested_spaces = userNode.getRelationships("Space_Created_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList
+        	  user_requested_spaces = userNode.getRelationships("Space_Created_By",Direction.INCOMING).asScala.map(_.getOtherNode(userNode)).toList.slice(prev_cnt,(prev_cnt+count))
           else if( userNode != null && relation_type.equalsIgnoreCase("s"))
-              user_requested_spaces = allSpaces
+              user_requested_spaces = allSpaces.slice(prev_cnt,(prev_cnt+count))
           else if(userNode != null && relation_type.equalsIgnoreCase("sc"))
-              user_requested_spaces = allSpaces.filter( x => x.getProperty("closed").toString().toInt == 1)
+              user_requested_spaces = allSpaces.filter( x => x.getProperty("closed").toString().toInt == 1).slice(prev_cnt,(prev_cnt+count))
           else if(relation_type.equalsIgnoreCase("so"))
-              user_requested_spaces = allSpaces.filter( x => x.getProperty("closed").toString().toInt == 0)
+              user_requested_spaces = allSpaces.filter( x => x.getProperty("closed").toString().toInt == 0).slice(prev_cnt,(prev_cnt+count))
           
           /*for(eachSpace <- user_related_spaces)
           requestedSpaces :+= JSONObject(

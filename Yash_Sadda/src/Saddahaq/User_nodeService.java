@@ -57,7 +57,7 @@ public class User_nodeService {
 
     public boolean space_isclosed(String id, int is_closed) throws org.apache.thrift.TException;
 
-    public String get_spaces(String user_name, String relation_type) throws org.apache.thrift.TException;
+    public String get_spaces(String user_name, String relation_type, int count, int prev_cnt) throws org.apache.thrift.TException;
 
     public boolean user_unfollow(String user_name1, String user_name2) throws org.apache.thrift.TException;
 
@@ -277,7 +277,7 @@ public class User_nodeService {
 
     public void space_isclosed(String id, int is_closed, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.space_isclosed_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void get_spaces(String user_name, String relation_type, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.get_spaces_call> resultHandler) throws org.apache.thrift.TException;
+    public void get_spaces(String user_name, String relation_type, int count, int prev_cnt, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.get_spaces_call> resultHandler) throws org.apache.thrift.TException;
 
     public void user_unfollow(String user_name1, String user_name2, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.user_unfollow_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -819,17 +819,19 @@ public class User_nodeService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "space_isclosed failed: unknown result");
     }
 
-    public String get_spaces(String user_name, String relation_type) throws org.apache.thrift.TException
+    public String get_spaces(String user_name, String relation_type, int count, int prev_cnt) throws org.apache.thrift.TException
     {
-      send_get_spaces(user_name, relation_type);
+      send_get_spaces(user_name, relation_type, count, prev_cnt);
       return recv_get_spaces();
     }
 
-    public void send_get_spaces(String user_name, String relation_type) throws org.apache.thrift.TException
+    public void send_get_spaces(String user_name, String relation_type, int count, int prev_cnt) throws org.apache.thrift.TException
     {
       get_spaces_args args = new get_spaces_args();
       args.setUser_name(user_name);
       args.setRelation_type(relation_type);
+      args.setCount(count);
+      args.setPrev_cnt(prev_cnt);
       sendBase("get_spaces", args);
     }
 
@@ -3792,9 +3794,9 @@ public class User_nodeService {
       }
     }
 
-    public void get_spaces(String user_name, String relation_type, org.apache.thrift.async.AsyncMethodCallback<get_spaces_call> resultHandler) throws org.apache.thrift.TException {
+    public void get_spaces(String user_name, String relation_type, int count, int prev_cnt, org.apache.thrift.async.AsyncMethodCallback<get_spaces_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      get_spaces_call method_call = new get_spaces_call(user_name, relation_type, resultHandler, this, ___protocolFactory, ___transport);
+      get_spaces_call method_call = new get_spaces_call(user_name, relation_type, count, prev_cnt, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -3802,10 +3804,14 @@ public class User_nodeService {
     public static class get_spaces_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String user_name;
       private String relation_type;
-      public get_spaces_call(String user_name, String relation_type, org.apache.thrift.async.AsyncMethodCallback<get_spaces_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private int count;
+      private int prev_cnt;
+      public get_spaces_call(String user_name, String relation_type, int count, int prev_cnt, org.apache.thrift.async.AsyncMethodCallback<get_spaces_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.user_name = user_name;
         this.relation_type = relation_type;
+        this.count = count;
+        this.prev_cnt = prev_cnt;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
@@ -3813,6 +3819,8 @@ public class User_nodeService {
         get_spaces_args args = new get_spaces_args();
         args.setUser_name(user_name);
         args.setRelation_type(relation_type);
+        args.setCount(count);
+        args.setPrev_cnt(prev_cnt);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -7986,7 +7994,7 @@ public class User_nodeService {
 
       protected get_spaces_result getResult(I iface, get_spaces_args args) throws org.apache.thrift.TException {
         get_spaces_result result = new get_spaces_result();
-        result.success = iface.get_spaces(args.user_name, args.relation_type);
+        result.success = iface.get_spaces(args.user_name, args.relation_type, args.count, args.prev_cnt);
         return result;
       }
     }
@@ -21767,6 +21775,8 @@ public class User_nodeService {
 
     private static final org.apache.thrift.protocol.TField USER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("user_name", org.apache.thrift.protocol.TType.STRING, (short)1);
     private static final org.apache.thrift.protocol.TField RELATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("relation_type", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("count", org.apache.thrift.protocol.TType.I32, (short)3);
+    private static final org.apache.thrift.protocol.TField PREV_CNT_FIELD_DESC = new org.apache.thrift.protocol.TField("prev_cnt", org.apache.thrift.protocol.TType.I32, (short)4);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -21776,11 +21786,15 @@ public class User_nodeService {
 
     public String user_name; // required
     public String relation_type; // required
+    public int count; // required
+    public int prev_cnt; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       USER_NAME((short)1, "user_name"),
-      RELATION_TYPE((short)2, "relation_type");
+      RELATION_TYPE((short)2, "relation_type"),
+      COUNT((short)3, "count"),
+      PREV_CNT((short)4, "prev_cnt");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -21799,6 +21813,10 @@ public class User_nodeService {
             return USER_NAME;
           case 2: // RELATION_TYPE
             return RELATION_TYPE;
+          case 3: // COUNT
+            return COUNT;
+          case 4: // PREV_CNT
+            return PREV_CNT;
           default:
             return null;
         }
@@ -21839,6 +21857,9 @@ public class User_nodeService {
     }
 
     // isset id assignments
+    private static final int __COUNT_ISSET_ID = 0;
+    private static final int __PREV_CNT_ISSET_ID = 1;
+    private BitSet __isset_bit_vector = new BitSet(2);
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -21846,6 +21867,10 @@ public class User_nodeService {
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.RELATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("relation_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COUNT, new org.apache.thrift.meta_data.FieldMetaData("count", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+      tmpMap.put(_Fields.PREV_CNT, new org.apache.thrift.meta_data.FieldMetaData("prev_cnt", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_spaces_args.class, metaDataMap);
     }
@@ -21855,23 +21880,33 @@ public class User_nodeService {
 
     public get_spaces_args(
       String user_name,
-      String relation_type)
+      String relation_type,
+      int count,
+      int prev_cnt)
     {
       this();
       this.user_name = user_name;
       this.relation_type = relation_type;
+      this.count = count;
+      setCountIsSet(true);
+      this.prev_cnt = prev_cnt;
+      setPrev_cntIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public get_spaces_args(get_spaces_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetUser_name()) {
         this.user_name = other.user_name;
       }
       if (other.isSetRelation_type()) {
         this.relation_type = other.relation_type;
       }
+      this.count = other.count;
+      this.prev_cnt = other.prev_cnt;
     }
 
     public get_spaces_args deepCopy() {
@@ -21882,6 +21917,10 @@ public class User_nodeService {
     public void clear() {
       this.user_name = null;
       this.relation_type = null;
+      setCountIsSet(false);
+      this.count = 0;
+      setPrev_cntIsSet(false);
+      this.prev_cnt = 0;
     }
 
     public String getUser_name() {
@@ -21932,6 +21971,52 @@ public class User_nodeService {
       }
     }
 
+    public int getCount() {
+      return this.count;
+    }
+
+    public get_spaces_args setCount(int count) {
+      this.count = count;
+      setCountIsSet(true);
+      return this;
+    }
+
+    public void unsetCount() {
+      __isset_bit_vector.clear(__COUNT_ISSET_ID);
+    }
+
+    /** Returns true if field count is set (has been assigned a value) and false otherwise */
+    public boolean isSetCount() {
+      return __isset_bit_vector.get(__COUNT_ISSET_ID);
+    }
+
+    public void setCountIsSet(boolean value) {
+      __isset_bit_vector.set(__COUNT_ISSET_ID, value);
+    }
+
+    public int getPrev_cnt() {
+      return this.prev_cnt;
+    }
+
+    public get_spaces_args setPrev_cnt(int prev_cnt) {
+      this.prev_cnt = prev_cnt;
+      setPrev_cntIsSet(true);
+      return this;
+    }
+
+    public void unsetPrev_cnt() {
+      __isset_bit_vector.clear(__PREV_CNT_ISSET_ID);
+    }
+
+    /** Returns true if field prev_cnt is set (has been assigned a value) and false otherwise */
+    public boolean isSetPrev_cnt() {
+      return __isset_bit_vector.get(__PREV_CNT_ISSET_ID);
+    }
+
+    public void setPrev_cntIsSet(boolean value) {
+      __isset_bit_vector.set(__PREV_CNT_ISSET_ID, value);
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case USER_NAME:
@@ -21950,6 +22035,22 @@ public class User_nodeService {
         }
         break;
 
+      case COUNT:
+        if (value == null) {
+          unsetCount();
+        } else {
+          setCount((Integer)value);
+        }
+        break;
+
+      case PREV_CNT:
+        if (value == null) {
+          unsetPrev_cnt();
+        } else {
+          setPrev_cnt((Integer)value);
+        }
+        break;
+
       }
     }
 
@@ -21960,6 +22061,12 @@ public class User_nodeService {
 
       case RELATION_TYPE:
         return getRelation_type();
+
+      case COUNT:
+        return Integer.valueOf(getCount());
+
+      case PREV_CNT:
+        return Integer.valueOf(getPrev_cnt());
 
       }
       throw new IllegalStateException();
@@ -21976,6 +22083,10 @@ public class User_nodeService {
         return isSetUser_name();
       case RELATION_TYPE:
         return isSetRelation_type();
+      case COUNT:
+        return isSetCount();
+      case PREV_CNT:
+        return isSetPrev_cnt();
       }
       throw new IllegalStateException();
     }
@@ -22008,6 +22119,24 @@ public class User_nodeService {
         if (!(this_present_relation_type && that_present_relation_type))
           return false;
         if (!this.relation_type.equals(that.relation_type))
+          return false;
+      }
+
+      boolean this_present_count = true;
+      boolean that_present_count = true;
+      if (this_present_count || that_present_count) {
+        if (!(this_present_count && that_present_count))
+          return false;
+        if (this.count != that.count)
+          return false;
+      }
+
+      boolean this_present_prev_cnt = true;
+      boolean that_present_prev_cnt = true;
+      if (this_present_prev_cnt || that_present_prev_cnt) {
+        if (!(this_present_prev_cnt && that_present_prev_cnt))
+          return false;
+        if (this.prev_cnt != that.prev_cnt)
           return false;
       }
 
@@ -22047,6 +22176,26 @@ public class User_nodeService {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetCount()).compareTo(typedOther.isSetCount());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetCount()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.count, typedOther.count);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPrev_cnt()).compareTo(typedOther.isSetPrev_cnt());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrev_cnt()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.prev_cnt, typedOther.prev_cnt);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -22082,6 +22231,14 @@ public class User_nodeService {
         sb.append(this.relation_type);
       }
       first = false;
+      if (!first) sb.append(", ");
+      sb.append("count:");
+      sb.append(this.count);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("prev_cnt:");
+      sb.append(this.prev_cnt);
+      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -22100,6 +22257,8 @@ public class User_nodeService {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -22140,6 +22299,22 @@ public class User_nodeService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 3: // COUNT
+              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+                struct.count = iprot.readI32();
+                struct.setCountIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 4: // PREV_CNT
+              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+                struct.prev_cnt = iprot.readI32();
+                struct.setPrev_cntIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -22165,6 +22340,12 @@ public class User_nodeService {
           oprot.writeString(struct.relation_type);
           oprot.writeFieldEnd();
         }
+        oprot.writeFieldBegin(COUNT_FIELD_DESC);
+        oprot.writeI32(struct.count);
+        oprot.writeFieldEnd();
+        oprot.writeFieldBegin(PREV_CNT_FIELD_DESC);
+        oprot.writeI32(struct.prev_cnt);
+        oprot.writeFieldEnd();
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -22189,19 +22370,31 @@ public class User_nodeService {
         if (struct.isSetRelation_type()) {
           optionals.set(1);
         }
-        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetCount()) {
+          optionals.set(2);
+        }
+        if (struct.isSetPrev_cnt()) {
+          optionals.set(3);
+        }
+        oprot.writeBitSet(optionals, 4);
         if (struct.isSetUser_name()) {
           oprot.writeString(struct.user_name);
         }
         if (struct.isSetRelation_type()) {
           oprot.writeString(struct.relation_type);
         }
+        if (struct.isSetCount()) {
+          oprot.writeI32(struct.count);
+        }
+        if (struct.isSetPrev_cnt()) {
+          oprot.writeI32(struct.prev_cnt);
+        }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, get_spaces_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(4);
         if (incoming.get(0)) {
           struct.user_name = iprot.readString();
           struct.setUser_nameIsSet(true);
@@ -22209,6 +22402,14 @@ public class User_nodeService {
         if (incoming.get(1)) {
           struct.relation_type = iprot.readString();
           struct.setRelation_typeIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.count = iprot.readI32();
+          struct.setCountIsSet(true);
+        }
+        if (incoming.get(3)) {
+          struct.prev_cnt = iprot.readI32();
+          struct.setPrev_cntIsSet(true);
         }
       }
     }
