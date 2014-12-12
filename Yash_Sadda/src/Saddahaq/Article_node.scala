@@ -341,7 +341,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
     mod_name: String,
     stars: Int,
     is_edit: Int,
-    is_closed: Int
+    is_closed: Int //1 - closed space, for non related to space / open space
     ):Boolean=          
     {
     

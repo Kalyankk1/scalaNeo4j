@@ -10,7 +10,7 @@ public class Fun{
 	
 	public static void main(String[] args) {
 	    
-		System.out.println("12/8/2014 - 07:00 P.M");
+		System.out.println("12/12/2014 - 08:15 P.M");
 		
 //		User_node.jar_check();
 		
