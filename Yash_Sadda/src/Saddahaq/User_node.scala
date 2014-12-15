@@ -2069,7 +2069,7 @@ override def NodeIndexConfig =   ("user", Some(Map("provider" -> "lucene", "type
 //      println(get_article_data(ech))
 //    }
     var ret = List[Any]()
-    //TODO
+    
     val l = List("P_EventEndTime", "Comment_Count_Unique","ev","v_users","votes","Commented_Users","Comment_Count","Is_Neo4j","P_Pin","P_Id","P_Author","P_Author_FullName","P_IsMarkedReadLater","P_Title","P_Title_ID","P_Category","P_SubCategory","P_Num_Comments","P_Feature_Image","P_Smry", "P_TimeCreated", "P_EventLocation", "P_EventStartTime", "P_EventAttendStatus", "P_SignsRequired", "P_PetitionSignStatus", "Space_Title", "Space_TitleId")
 		val l2 = List("FN","UN")
         val l3 = List("Name","UName")
@@ -5104,13 +5104,39 @@ override def NodeIndexConfig =   ("user", Some(Map("provider" -> "lucene", "type
          var user_follow_rels = List[org.neo4j.graphdb.Relationship]()
          
          
+         //get the spaces of the user
+         var spaceIndex = getNodeIndex("space").get
+         var allSpaces = spaceIndex.query( "id", "*" ).iterator().asScala.toList
+         var user_spaces = (node.getRelationships("Space_Followed_By","Space_Created_By","Admin_Of_Space").asScala.map(_.getOtherNode(node)).toList ).distinct
+          					
+/*
+         var allSpaces = spaceIndex.query( "id", "*" ).iterator().asScala.toList
+         var user_spaces = (node.getRelationships("Space_Followed_By",Direction.INCOMING).asScala.map(_.getOtherNode(node)).toList
+        		 			::: node.getRelationships("Space_Created_By",Direction.INCOMING).asScala.map(_.getOtherNode(node)).toList
+          					::: node.getRelationships("Admin_Of_Space",Direction.OUTGOING).asScala.map(_.getOtherNode(node)).toList ).distinct
+          					
+*/          
+         
              // extracting all the actions that were done one the items published by the user
              event_invites = node.getRelationships("Invited_To_Event","User_Of_Article","User_Of_Event","User_Of_Comment").asScala.toList
-	         var art_list = node.getRelationships("Article_Written_By").asScala.map(_.getOtherNode(node)).toList
+	         
+             //get the list of articles written by user along with the list of articles from user following / created / admin of spaces
+             var art_list = ( node.getRelationships("Article_Written_By").asScala.map(_.getOtherNode(node)).toList
+            		 		::: user_spaces.map( x => x.getRelationships("Article_Tagged_To_Space").asScala.map(_.getOtherNode(x)).toList)
+            		 		    .flatten).distinct
+            		 		
              art_com_rels = art_list.map( x => x.getRelationships("Comment_To_Article").asScala.toList.filterNot( x => x.getStartNode.hasRelationship("Comment_To_Comment",Direction.OUTGOING)).sortBy(-_.getProperty("time").toString().toInt).slice(0,1).map(_.getOtherNode(x))).flatten.map( x => x.getSingleRelationship("Comment_Written_By",Direction.OUTGOING))
-		     var event_list = node.getRelationships("Event_Created_By").asScala.map(_.getOtherNode(node)).toList
-             var p_list = node.getRelationships("Petition_Written_By").asScala.map(_.getOtherNode(node)).toList
-             
+		     
+             //get the list of events written by user along with the list of events from user following / created / admin of spaces
+             var event_list = (node.getRelationships("Event_Created_By").asScala.map(_.getOtherNode(node)).toList
+            		 		::: user_spaces.map( x => x.getRelationships("Event_Tagged_To_Space").asScala.map(_.getOtherNode(x)).toList)
+            		 		    .flatten).distinct
+            		 		   
+             //get the list of petitions written by user along with the list of petitions from user following / created / admin of spaces
+             var p_list = (node.getRelationships("Petition_Written_By").asScala.map(_.getOtherNode(node)).toList
+            		 		::: user_spaces.map( x => x.getRelationships("Petition_Tagged_To_Space").asScala.map(_.getOtherNode(x)).toList)
+            		 		    .flatten).distinct
+            		 		    
 	         p_poll_rels = p_list.map( x => x.getRelationships("Poll_App_Of_Petition").asScala.toList.map(_.getOtherNode(x))).flatten.map( x => x.getRelationships("Voted_To_Poll").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,1)).flatten
 		     
 	         art_poll_rels = art_list.map( x => x.getRelationships("Poll_App_Of").asScala.toList.map(_.getOtherNode(x))).flatten.map( x => x.getRelationships("Voted_To_Poll").asScala.toList.sortBy(-_.getProperty("time").toString().toInt).slice(0,1)).flatten
@@ -5144,9 +5170,17 @@ override def NodeIndexConfig =   ("user", Some(Map("provider" -> "lucene", "type
              val t_related = node.getRelationships("Participated_In_Townhall").asScala.toList.map(_.getEndNode().getSingleRelationship("Townhall_Of",Direction.OUTGOING).getEndNode()).distinct.map( x => x.getRelationships("Townhall_Of").asScala.toList.map(_.getStartNode())).flatten.distinct.filter(x => !t_part.contains(x) && x.getProperty("t_date").toString().toInt >= cur_time  && x.getProperty("t_date").toString().toInt <= (cur_time+1800)  ).map( x => x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING))
 		     //val d_related = node.getRelationships("Participated_In_Debate").asScala.toList.map(_.getEndNode().getSingleRelationship("Townhall_Of",Direction.OUTGOING).getEndNode()).distinct.map( x => x.getRelationships("Townhall_Of").asScala.toList.map(_.getStartNode())).flatten.distinct.filter(x => !t_part.contains(x) && x.getProperty("t_date").toString().toInt >= cur_time  && x.getProperty("t_date").toString().toInt <= (cur_time+1800)  ).map( x => x.getSingleRelationship("Townhall_Written_By",Direction.OUTGOING))
 		     
+            //get the list of space related relations
+             //add it to rels
+             val space_rel = (node.getRelationships("Space_Followed_By","Space_Created_By","Admin_Of_Space").asScala.toList
+            		 			:::
+            		 			user_spaces.map( x => x.getRelationships("Article_Tagged_To_Space","Event_Tagged_To_Space","Petition_Tagged_To_Space","Debate_Tagged_To_Space").asScala.toList)
+            		 		    .flatten).distinct
+             
+             
              // sorting all the actions(relations) based on time
 	     var rels = (user_follow_rels:::p_completed_list:::t_qtn_rels:::p_sign_rels:::p_poll_rels:::p_com_rels:::art_voted_rels:::event_atnd_rels:::user_rels:::event_invites:::art_poll_rels:::event_poll_rels:::art_com_rels:::event_com_rels:::sub_com_rels:::event_notify_rels:::vote_up_rels:::vote_down_rels).distinct.sortBy(-_.getProperty("time").toString().toInt)
-         rels = (t_part_rels:::d_part_rels:::rels)
+         rels = (t_part_rels:::d_part_rels:::rels ::: space_rel)
 	     // sending notofications count when count = 0 and prev_cnt = 0
 	     if(count == 0 && prev_cnt == 0)
 	     {
@@ -5885,7 +5919,90 @@ override def NodeIndexConfig =   ("user", Some(Map("provider" -> "lucene", "type
 		            
 		            }
 		            
+//val k = List("Is_Neo4j","N_Article_Event_Title","N_Content","N_Type","N_Tag","N_Link","N_Timestamp","N_Author","N_Author_Full_Name","N_Feature_Image","N_Refer_To","Article_Event_ID","N_New")
+		     
+	        case "Article_Tagged_To_Space" => 
+	        			val space_node = x.getEndNode()
+		                val art_node = x.getStartNode()
+			            
+		                var n_new = 0
+		                if(x.getProperty("time").toString().toInt > t)
+		                {
+		                  n_new = 1
+		                }
+		                
+	        			val url = "/" + art_node.getRelationships("Belongs_To_Category").asScala.toList.map(_.getOtherNode(art_node)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0) + "/" + art_node.getRelationships("Belongs_To_Subcategory_Article").asScala.toList.filter( y => y.hasProperty("main")).map(_.getOtherNode(art_node).getProperty("name").toString()).slice(0,1).mkString(",") + "/" + art_node.getProperty("article_title_id")
+	        			list :+= JSONObject(k.zip(List(true, space_node.getProperty("space_title"),"","A","TS",url,x.getProperty("time"),"",art_node.getProperty("article_title"),art_node.getProperty("article_featured_img"),"", art_node.getProperty("article_id"),n_new)).toMap)
+		        
+	        case "Event_Tagged_To_Space" => 
+	        			val space_node = x.getEndNode()
+		                val event_node = x.getStartNode()
+			            
+		                var n_new = 0
+		                if(x.getProperty("time").toString().toInt > t)
+		                {
+		                  n_new = 1
+		                }
+		                
+	        			val url = "/Events/" + event_node.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(event_node)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0).toString().capitalize + "/" + event_node.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter( y => y.hasProperty("main")).map(_.getOtherNode(event_node).getProperty("name").toString()).slice(0,1).mkString(",") + "/" + event_node.getProperty("event_title_id")
+			            list :+= JSONObject(k.zip(List(true, space_node.getProperty("space_title"),"","E","TS",url,x.getProperty("time"),"",event_node.getProperty("event_title"),event_node.getProperty("event_featured_img"),"", event_node.getProperty("event_id"),n_new)).toMap)
+		        
+	        case "Petition_Tagged_To_Space" => 
+	        			val space_node = x.getEndNode()
+		                val p_node = x.getStartNode()
+			            
+		                var n_new = 0
+		                if(x.getProperty("time").toString().toInt > t)
+		                {
+		                  n_new = 1
+		                }
+		                
+	        			val url = "/petitions/" + p_node.getRelationships("Belongs_To_Petition_Category").asScala.toList.map(_.getOtherNode(p_node)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0) + "/" + p_node.getProperty("p_title_id")
+		                list :+= JSONObject(k.zip(List(true, space_node.getProperty("space_title"),"","P","TS",url,x.getProperty("time"),"",p_node.getProperty("p_title"),p_node.getProperty("p_img_url"),"", p_node.getProperty("p_id"),n_new)).toMap)
+		        
+	        case "Space_Folloed_By" =>
+	        			val auth_node = x.getEndNode()
+		                val space_node = x.getStartNode()
+			            
+		                var n_new = 0
+		                if(x.getProperty("time").toString().toInt > t)
+		                {
+		                  n_new = 1
+		                }
+		                
+	        			val url = "/spaces/" + space_node.getProperty("space_title_id")
+	        			list :+= JSONObject(k.zip(List(true,space_node.getProperty("space_title"),"","S","F",url,x.getProperty("time"),auth_node.getProperty("user_name"),auth_node.getProperty("first_name") + " " + auth_node.getProperty("last_name"), space_node.getProperty("space_featured_img"), "", space_node.getProperty("space_id"),n_new)).toMap)
+		        
+	        case "Space_Created_By" => 
+	        			val auth_node = x.getEndNode()
+		                val space_node = x.getStartNode()
+			            
+		                var n_new = 0
+		                if(x.getProperty("time").toString().toInt > t)
+		                {
+		                  n_new = 1
+		                }
+		                
+	        			val url = "/spaces/" + space_node.getProperty("space_title_id")
+	        			list :+= JSONObject(k.zip(List(true,space_node.getProperty("space_title"),"","S","C",url,x.getProperty("time"),auth_node.getProperty("user_name"),auth_node.getProperty("first_name") + " " + auth_node.getProperty("last_name"), space_node.getProperty("space_featured_img"), "", space_node.getProperty("space_id"),n_new)).toMap)
+		        
+	        case "Admin_Of_Space" => 
+	        			val space_node = x.getEndNode()
+		                val auth_node = x.getStartNode()
+			            
+		                var n_new = 0
+		                if(x.getProperty("time").toString().toInt > t)
+		                {
+		                  n_new = 1
+		                }
+		                
+	        			val url = "/spaces/" + space_node.getProperty("space_title_id")
+	        			list :+= JSONObject(k.zip(List(true,space_node.getProperty("space_title"),"","S","A",url,x.getProperty("time"),auth_node.getProperty("user_name"),auth_node.getProperty("first_name") + " " + auth_node.getProperty("last_name"), space_node.getProperty("space_featured_img"), "", space_node.getProperty("space_id"),n_new)).toMap)
+		         
+		            
 		       case _ => ""
+		         
+		         
 		     }
 		     
 		     //slicing relations based on count and prev_cnt 
@@ -6934,8 +7051,7 @@ override def NodeIndexConfig =   ("user", Some(Map("provider" -> "lucene", "type
 		            val m = JSONObject(map.toMap).toString()
 		            val url = "/Events/" + event_node.getRelationships("Belongs_To_Event_Category").asScala.toList.map(_.getOtherNode(event_node)).map(y => y.getProperty("name")).filterNot(x => x.equals("all"))(0).toString().capitalize + "/" + event_node.getRelationships("Belongs_To_Subcategory_Event").asScala.toList.filter( y => y.hasProperty("main")).map(_.getOtherNode(event_node).getProperty("name").toString()).slice(0,1).mkString(",") + "/" + event_node.getProperty("event_title_id")
 		            list :+= JSONObject(l.zip(List(true,m,"E","A",url,x.getProperty("time"),user_node.getProperty("user_name"),user_node.getProperty("first_name") + " " + user_node.getProperty("last_name"), auth_node.getProperty("user_name"),   event_node.getProperty("event_featured_img"), "", attend_list.mkString(","), event_node.getRelationships("Comment_To_Event").asScala.size, 0, event_node.getProperty("event_id"))).toMap)
-			
-		            
+			       
 		            
 	        case _ => ""
 	     }
@@ -8256,6 +8372,9 @@ println("Jar Ok")
     System.out.println(get_all_items("ev","user100",1,4));
     System.out.println(get_all_items("ev","user100",1,5));
     System.out.println(get_all_items("de","user100",10,0)); */
+    
+  /*  System.out.println(notifications("user98", 0, 0));
+    System.out.println(notifications("user98", 100, 0)); */
   }
 
 }

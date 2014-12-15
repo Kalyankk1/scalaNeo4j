@@ -3625,7 +3625,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		        
 			    else
 			    {
-			      
+			      //Trending Tiles i.e., tiles_type = 'T' or any
 			        // getting the pinned articles
 		            
 				    
@@ -4676,7 +4676,6 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 	            
 			    val final_map = List(arts_map, events_map, petitions_map, townhalls_map, debates_map)
 				val merge_map = mergeMap(final_map)((v1, v2) => v1 + v2)
-				
 				val trending_list = merge_map.keys.toList.sortBy(x => -merge_map(x))
 				
 	            each.setProperty("value",trending_list.mkString(","))
@@ -4715,7 +4714,6 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 		            
 				    val final_map = List(arts_map, events_map, petitions_map, townhalls_map, debates_map)
 					val merge_map = mergeMap(final_map)((v1, v2) => v1 + v2)
-					
 					val trending_list = merge_map.keys.toList.sortBy(x => -merge_map(x))
 					
 		            featured_tiles_node.setProperty("value",trending_list.mkString(","))
@@ -4756,8 +4754,7 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 			  val petitions_map = petitions_list1.zip(petitions_list2).toMap
 	          
 			    val final_map = List(arts_map, events_map, petitions_map)
-				val merge_map = mergeMap(final_map)((v1, v2) => v1 + v2)
-				
+			    val merge_map = mergeMap(final_map)((v1, v2) => v1 + v2)
 				val trending_list = merge_map.keys.toList.sortBy(x => -merge_map(x))
 				
 	            each.setProperty("value",trending_list.mkString(","))
@@ -4786,8 +4783,8 @@ trait Article_node extends Neo4jWrapper with SingletonEmbeddedGraphDatabaseServi
 				  
 		            
 				    val final_map = List(arts_map, events_map, petitions_map)
-					val merge_map = mergeMap(final_map)((v1, v2) => v1 + v2)
-					
+	            	val merge_map = mergeMap(final_map)((v1, v2) => v1 + v2)
+	            	
 					val trending_list = merge_map.keys.toList.sortBy(x => -merge_map(x))
 					
 		            featured_tiles_node.setProperty("value",trending_list.mkString(","))
